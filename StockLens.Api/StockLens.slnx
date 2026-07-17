@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/StockLens.Api/StockLens.Api.csproj" />
+    <Project Path="src/StockLens.Application/StockLens.Application.csproj" />
+    <Project Path="src/StockLens.Domain/StockLens.Domain.csproj" />
+    <Project Path="src/StockLens.Infrastructure/StockLens.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/StockLens.Api.Tests/StockLens.Api.Tests.csproj" />
+    <Project Path="tests/StockLens.Domain.Tests/StockLens.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

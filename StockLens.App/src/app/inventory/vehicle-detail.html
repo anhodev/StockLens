@@ -1,0 +1,99 @@
+<div class="drawer-backdrop" (click)="closed.emit()"></div>
+<aside class="drawer card">
+  <header class="drawer-head">
+    <div>
+      <h2>{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h2>
+      <span class="muted">{{ vehicle.trim }} · VIN {{ vehicle.vin }}</span>
+    </div>
+    <button class="btn-ghost" (click)="closed.emit()">✕</button>
+  </header>
+
+  <div class="drawer-body">
+    <section class="facts">
+      <div><span class="muted">Status</span>
+        <span class="badge"
+          [ngClass]="{'badge-instock': vehicle.status==='InStock','badge-reserved': vehicle.status==='Reserved','badge-sold': vehicle.status==='Sold'}">
+          {{ vehicle.status }}
+        </span>
+      </div>
+      <div><span class="muted">Days in inventory</span>
+        <strong [class.aging-text]="vehicle.isAgingStock">{{ vehicle.daysInInventory }}
+          @if (vehicle.isAgingStock) { <span class="badge badge-aging">AGING</span> }
+        </strong>
+      </div>
+      <div><span class="muted">List price</span><strong>{{ vehicle.listPrice | currency:'USD':'symbol':'1.0-0' }}</strong></div>
+      <div><span class="muted">Cost</span><strong>{{ vehicle.cost | currency:'USD':'symbol':'1.0-0' }}</strong></div>
+      <div><span class="muted">Mileage</span><strong>{{ vehicle.mileage | number }} mi</strong></div>
+      <div><span class="muted">Acquired</span><strong>{{ vehicle.acquiredDate | date:'mediumDate' }}</strong></div>
+    </section>
+
+    <section class="strategy">
+      <h3>Effective strategy</h3>
+      @if (effective(); as e) {
+        <div class="strategy-card">
+          <div class="strategy-top">
+            <strong>{{ e.strategy.name }}</strong>
+            <span class="badge badge-open">{{ e.matchedScope }}</span>
+          </div>
+          <p class="muted">{{ e.strategy.description }}</p>
+          <div class="strategy-metrics">
+            @if (e.strategy.discountPercent != null) { <span>Discount: <strong>{{ e.strategy.discountPercent }}%</strong></span> }
+            @if (e.strategy.targetDaysToSell != null) { <span>Target: <strong>{{ e.strategy.targetDaysToSell }}d</strong></span> }
+          </div>
+        </div>
+      } @else {
+        <p class="muted">No strategy applies to this vehicle yet.</p>
+      }
+    </section>
+
+    <section class="actions">
+      <h3>Actions &amp; insights</h3>
+
+      <div class="new-action">
+        <div class="row">
+          <div>
+            <label>Action</label>
+            <select [(ngModel)]="newType">
+              @for (t of actionTypes; track t) { <option [value]="t">{{ t }}</option> }
+            </select>
+          </div>
+          <div>
+            <label>Status</label>
+            <select [(ngModel)]="newStatus">
+              @for (s of actionStatuses; track s) { <option [value]="s">{{ s }}</option> }
+            </select>
+          </div>
+        </div>
+        <label>Note</label>
+        <textarea rows="2" [(ngModel)]="newNote" placeholder="e.g. Reduce price by $1,500 next week"></textarea>
+        <div class="new-action-foot">
+          <input [(ngModel)]="newBy" placeholder="Logged by" style="max-width:160px" />
+          <button class="btn-primary" [disabled]="saving()" (click)="addAction()">Log action</button>
+        </div>
+      </div>
+
+      <ul class="action-list">
+        @for (a of actions(); track a.id) {
+          <li>
+            <div class="action-top">
+              <strong>{{ a.actionType }}</strong>
+              <span class="badge" [ngClass]="statusBadge(a.status)">{{ a.status }}</span>
+            </div>
+            @if (a.note) { <p>{{ a.note }}</p> }
+            <div class="action-meta muted">
+              {{ a.createdBy }} · {{ a.createdAt | date:'MMM d, h:mm a' }}
+              @if (a.status !== 'Done' && a.status !== 'Cancelled') {
+                <span class="action-controls">
+                  @if (a.status === 'Open') { <button class="btn-ghost sm" (click)="advance(a,'InProgress')">Start</button> }
+                  <button class="btn-ghost sm" (click)="advance(a,'Done')">Mark done</button>
+                </span>
+              }
+            </div>
+          </li>
+        } @empty {
+          <li class="muted">No actions logged yet.</li>
+        }
+      </ul>
+    </section>
+  </div>
+</aside>

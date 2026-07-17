@@ -1,0 +1,77 @@
+@if (summary(); as s) {
+  <div class="kpi-grid">
+    <div class="card kpi">
+      <span class="kpi-label">Vehicles in stock</span>
+      <span class="kpi-value">{{ s.totalInStock }}</span>
+    </div>
+    <div class="card kpi kpi-aging">
+      <span class="kpi-label">Aging stock (&gt;90 days)</span>
+      <span class="kpi-value">{{ s.agingStockCount }}</span>
+      <span class="kpi-sub">needs attention</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Total stock value</span>
+      <span class="kpi-value">{{ s.totalStockValue | currency:'USD':'symbol':'1.0-0' }}</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Avg days in inventory</span>
+      <span class="kpi-value">{{ s.averageDaysInInventory | number:'1.0-1' }}</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Sold (30 days)</span>
+      <span class="kpi-value">{{ s.soldLast30Days }}</span>
+      <span class="kpi-sub">{{ s.revenueLast30Days | currency:'USD':'symbol':'1.0-0' }} revenue</span>
+    </div>
+    <div class="card kpi">
+      <span class="kpi-label">Avg days to sell</span>
+      <span class="kpi-value">{{ (s.averageDaysToSell ?? 0) | number:'1.0-1' }}</span>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card panel">
+      <div class="panel-head">
+        <h3>Top sales</h3>
+        <span class="muted">highest-value recent sales</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Vehicle</th><th class="right">Sale price</th><th class="right">Days to sell</th><th class="right">Sold</th></tr>
+        </thead>
+        <tbody>
+          @for (t of s.topSales; track t.vehicleId) {
+            <tr>
+              <td>{{ t.year }} {{ t.make }} {{ t.model }}</td>
+              <td class="right nowrap">{{ t.salePrice | currency:'USD':'symbol':'1.0-0' }}</td>
+              <td class="right">{{ t.daysToSell }}</td>
+              <td class="right nowrap muted">{{ t.soldDate | date:'MMM d' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="muted">No sales yet.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card panel">
+      <div class="panel-head">
+        <h3>Stock by make</h3>
+        <span class="muted">count &amp; value on the lot</span>
+      </div>
+      <div class="bars">
+        @for (m of s.stockByMake; track m.make) {
+          <div class="bar-row">
+            <span class="bar-label">{{ m.make }}</span>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="(m.count / maxMakeCount(s)) * 100"></div>
+            </div>
+            <span class="bar-count">{{ m.count }}</span>
+            <span class="bar-value muted">{{ m.stockValue | currency:'USD':'symbol':'1.0-0' }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+} @else if (loading()) {
+  <p class="muted">Loading dashboard…</p>
+}

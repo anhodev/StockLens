@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "StockLens.API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "prepare-api",
+      "program": "${workspaceFolder}/StockLens.Api/src/StockLens.Api/bin/Debug/net10.0/StockLens.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/StockLens.Api/src/StockLens.Api",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5080"
+      },
+      // Opens Swagger once Kestrel reports it is listening.
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+        "uriFormat": "%s/swagger"
+      },
+      "console": "internalConsole",
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "name": "StockLens.App (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "start-app",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/StockLens.App"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "StockLens (API + App)",
+      "configurations": ["StockLens.API", "StockLens.App (Chrome)"],
+      "stopAll": true
+    }
+  ]
+}

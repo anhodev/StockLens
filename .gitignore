@@ -1,0 +1,51 @@
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files
+# Single ignore file for the whole solution (StockLens.Api + StockLens.App).
+
+# ---- .NET (StockLens.Api) ----
+bin/
+obj/
+artifacts/
+[Bb]uild/
+*.user
+*.suo
+
+# ---- Node / Angular (StockLens.App) ----
+node_modules/
+dist/
+.angular/
+coverage/
+.sass-cache/
+npm-debug.log
+yarn-error.log
+testem.log
+libpeerconnection.log
+/StockLens.App/tmp
+/StockLens.App/out-tsc
+/StockLens.App/bazel-out
+/StockLens.App/connect.lock
+/StockLens.App/typings
+
+# ---- IDEs and editors ----
+.vs/
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+**/.history/
+
+# Visual Studio Code — ignore everything except the shared team configs
+**/.vscode/*
+!**/.vscode/settings.json
+!**/.vscode/tasks.json
+!**/.vscode/launch.json
+!**/.vscode/extensions.json
+
+# ---- System files ----
+.DS_Store
+Thumbs.db
+
+# ---- Env / secrets ----
+*.env

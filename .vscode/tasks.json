@@ -1,0 +1,74 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/StockLens.Api/StockLens.slnx",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "start-database",
+      "detail": "Starts the PostgreSQL container the API connects to (localhost:5433).",
+      "type": "shell",
+      "command": "docker compose up -d",
+      "options": { "cwd": "${workspaceFolder}/StockLens.Api" },
+      "problemMatcher": []
+    },
+    {
+      "label": "stop-database",
+      "type": "shell",
+      "command": "docker compose down",
+      "options": { "cwd": "${workspaceFolder}/StockLens.Api" },
+      "problemMatcher": []
+    },
+    {
+      // Used as the API's preLaunchTask: DB must be up before EF migrations run at startup.
+      "label": "prepare-api",
+      "dependsOn": ["start-database", "build-api"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "test-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["test", "${workspaceFolder}/StockLens.Api/StockLens.slnx"],
+      "problemMatcher": "$msCompile",
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "start-app",
+      "detail": "Runs the Angular dev server on http://localhost:4200.",
+      "type": "shell",
+      "command": "npm start",
+      "options": { "cwd": "${workspaceFolder}/StockLens.App" },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ng",
+        "fileLocation": "relative",
+        "pattern": {
+          "regexp": "^([^\\s].*)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+          "file": 1,
+          "location": 2,
+          "severity": 3,
+          "code": 4,
+          "message": 5
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "(.*?)Building...",
+          "endsPattern": "(.*?)(bundle generation complete|Watch mode enabled)"
+        }
+      }
+    }
+  ]
+}

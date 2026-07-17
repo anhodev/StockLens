@@ -1,0 +1,42 @@
+:host { display: block; min-height: 100vh; }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 14px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.logo {
+  font-size: 26px; color: var(--primary);
+  background: rgba(56, 189, 248, 0.12);
+  width: 42px; height: 42px; border-radius: 10px;
+  display: grid; place-items: center;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-name { font-size: 18px; font-weight: 700; letter-spacing: 0.02em; }
+.brand-sub { font-size: 12px; color: var(--text-dim); }
+
+.tabs { display: flex; gap: 6px; margin-left: 10px; }
+.tabs button {
+  background: transparent; color: var(--text-dim);
+  padding: 8px 16px; border-radius: 8px; font-size: 14px;
+}
+.tabs button:hover { color: var(--text); background: var(--surface-2); }
+.tabs button.active { background: var(--surface-2); color: var(--primary); }
+
+.conn {
+  margin-left: auto; display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text-dim);
+}
+.conn .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--danger); }
+.conn.on { color: var(--success); }
+.conn.on .dot { background: var(--success); box-shadow: 0 0 8px var(--success); }
+
+.content { padding: 24px 28px 60px; max-width: 1280px; margin: 0 auto; }

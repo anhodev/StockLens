@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "ms-dotnettools.csdevkit",
+    "ms-dotnettools.csharp",
+    "angular.ng-template",
+    "ms-azuretools.vscode-docker"
+  ]
+}

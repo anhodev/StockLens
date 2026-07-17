@@ -1,0 +1,102 @@
+<div class="strat-head">
+  <div>
+    <h2>Business strategies</h2>
+    <p class="muted">Pricing &amp; disposition rules at factory, vehicle-type, or single-vehicle scope. Most specific wins.</p>
+  </div>
+  <button class="btn-primary" (click)="startCreate()">+ New strategy</button>
+</div>
+
+@for (scope of scopes; track scope) {
+  <div class="card scope-block">
+    <div class="scope-head">
+      <h3>{{ scope }}</h3>
+      <span class="muted">{{ scopeHint(scope) }}</span>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Scope key</th><th class="right">Discount</th><th class="right">Target days</th><th>Active</th><th></th></tr>
+      </thead>
+      <tbody>
+        @for (s of grouped(scope); track s.id) {
+          <tr>
+            <td><strong>{{ s.name }}</strong><br /><span class="muted">{{ s.description }}</span></td>
+            <td class="mono">{{ s.scopeKey }}</td>
+            <td class="right">{{ s.discountPercent != null ? s.discountPercent + '%' : '—' }}</td>
+            <td class="right">{{ s.targetDaysToSell ?? '—' }}</td>
+            <td>
+              <span class="badge" [ngClass]="s.isActive ? 'badge-done' : 'badge-sold'">
+                {{ s.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="right nowrap">
+              <button class="btn-ghost sm" (click)="startEdit(s)">Edit</button>
+              <button class="btn-danger sm" (click)="remove(s)">Delete</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="muted">No {{ scope }} strategies.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (editing()) {
+  <div class="drawer-backdrop" (click)="cancel()"></div>
+  <aside class="drawer card">
+    <header class="drawer-head">
+      <h2>{{ form.id ? 'Edit' : 'New' }} strategy</h2>
+      <button class="btn-ghost" (click)="cancel()">✕</button>
+    </header>
+    <div class="drawer-body">
+      <div class="field">
+        <label>Scope</label>
+        <select [(ngModel)]="form.scope">
+          @for (sc of scopes; track sc) { <option [value]="sc">{{ sc }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label>Scope key <span class="muted">({{ scopeHint(form.scope) }})</span></label>
+        <input [(ngModel)]="form.scopeKey" placeholder="e.g. Toyota" />
+      </div>
+      <div class="field">
+        <label>Name</label>
+        <input [(ngModel)]="form.name" placeholder="e.g. Fast-turn clearance" />
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea rows="2" [(ngModel)]="form.description"></textarea>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Discount %</label>
+          <input type="number" [(ngModel)]="form.discountPercent" min="0" max="100" />
+        </div>
+        <div class="field">
+          <label>Target days to sell</label>
+          <input type="number" [(ngModel)]="form.targetDaysToSell" min="1" />
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Effective from</label>
+          <input type="date" [(ngModel)]="form.effectiveFrom" />
+        </div>
+        <div class="field">
+          <label>Effective to (optional)</label>
+          <input type="date" [(ngModel)]="form.effectiveTo" />
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" [(ngModel)]="form.isActive" /> Active</label>
+
+      @if (error(); as msg) { <p class="err">{{ msg }}</p> }
+
+      <div class="drawer-foot">
+        <button class="btn-ghost" (click)="cancel()">Cancel</button>
+        <button class="btn-primary" [disabled]="saving()" (click)="save()">
+          {{ form.id ? 'Save changes' : 'Create strategy' }}
+        </button>
+      </div>
+    </div>
+  </aside>
+}

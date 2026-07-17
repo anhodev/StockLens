@@ -1,0 +1,92 @@
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #273449;
+  --border: #334155;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --primary: #38bdf8;
+  --primary-strong: #0ea5e9;
+  --success: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --aging: #f97316;
+  --radius: 12px;
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 600; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s, opacity 0.15s;
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary { background: var(--primary-strong); color: #08131f; }
+.btn-primary:hover:not(:disabled) { background: var(--primary); }
+.btn-ghost { background: var(--surface-2); color: var(--text); }
+.btn-ghost:hover:not(:disabled) { background: var(--border); }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-danger:hover:not(:disabled) { background: rgba(248, 113, 113, 0.12); }
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+label { font-size: 12px; color: var(--text-dim); display: block; margin-bottom: 4px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+th { color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+tbody tr:hover { background: var(--surface-2); }
+
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-aging { background: rgba(249, 115, 22, 0.18); color: var(--aging); }
+.badge-instock { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+.badge-reserved { background: rgba(251, 191, 36, 0.15); color: var(--warn); }
+.badge-sold { background: rgba(148, 163, 184, 0.18); color: var(--text-dim); }
+.badge-open { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
+.badge-done { background: rgba(52, 211, 153, 0.15); color: var(--success); }
+
+.muted { color: var(--text-dim); }
+.right { text-align: right; }
+.nowrap { white-space: nowrap; }
