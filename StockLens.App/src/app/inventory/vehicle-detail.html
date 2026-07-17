@@ -21,11 +21,20 @@
           @if (vehicle.isAgingStock) { <span class="badge badge-aging">AGING</span> }
         </strong>
       </div>
+      <div><span class="muted">Model</span><strong>{{ vehicle.model }}</strong></div>
+      <div><span class="muted">Year</span><strong>{{ vehicle.year }}</strong></div>
       <div><span class="muted">List price</span><strong>{{ vehicle.listPrice | currency:'USD':'symbol':'1.0-0' }}</strong></div>
       <div><span class="muted">Cost</span><strong>{{ vehicle.cost | currency:'USD':'symbol':'1.0-0' }}</strong></div>
       <div><span class="muted">Body</span><strong>{{ vehicle.bodyType }}</strong></div>
       <div><span class="muted">Mileage</span><strong>{{ vehicle.mileage | number }} mi</strong></div>
       <div><span class="muted">Acquired</span><strong>{{ vehicle.acquiredDate | date:'mediumDate' }}</strong></div>
+      <div><span class="muted">Sold</span>
+        @if (vehicle.soldDate) {
+          <strong>{{ vehicle.soldDate | date:'mediumDate' }}</strong>
+        } @else {
+          <strong class="not-sold">Not sold</strong>
+        }
+      </div>
     </section>
 
     <section class="strategy">

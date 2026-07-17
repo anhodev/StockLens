@@ -33,6 +33,8 @@
   letter-spacing: 0.07em; font-weight: 600;
 }
 .aging-text { color: var(--aging); }
+/* Deliberately not .muted: inside .facts that class renders as an uppercase label. */
+.not-sold { color: var(--text-dim); font-weight: 500; }
 
 section h3 {
   font-size: 10px; margin-bottom: 10px;

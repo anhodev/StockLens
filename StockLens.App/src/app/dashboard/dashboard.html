@@ -1,31 +1,17 @@
 @if (summary(); as s) {
   <div class="kpi-grid">
-    <div class="card kpi">
-      <span class="kpi-label">Vehicles in stock</span>
-      <span class="kpi-value">{{ s.totalInStock }}</span>
-    </div>
-    <div class="card kpi kpi-aging">
-      <span class="kpi-label">Aging stock (&gt;90 days)</span>
-      <span class="kpi-value">{{ s.agingStockCount }}</span>
-      <span class="kpi-sub">needs attention</span>
-    </div>
-    <div class="card kpi">
-      <span class="kpi-label">Total stock value</span>
-      <span class="kpi-value">{{ s.totalStockValue | currency:'USD':'symbol':'1.0-0' }}</span>
-    </div>
-    <div class="card kpi">
-      <span class="kpi-label">Avg days in inventory</span>
-      <span class="kpi-value">{{ s.averageDaysInInventory | number:'1.0-1' }}</span>
-    </div>
-    <div class="card kpi">
-      <span class="kpi-label">Sold (30 days)</span>
-      <span class="kpi-value">{{ s.soldLast30Days }}</span>
-      <span class="kpi-sub">{{ s.revenueLast30Days | currency:'USD':'symbol':'1.0-0' }} revenue</span>
-    </div>
-    <div class="card kpi">
-      <span class="kpi-label">Avg days to sell</span>
-      <span class="kpi-value">{{ (s.averageDaysToSell ?? 0) | number:'1.0-1' }}</span>
-    </div>
+    @for (k of kpis(); track k.label) {
+      <div class="card kpi" [ngClass]="'kpi-' + k.accent">
+        <div class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">{{ k.icon }}</span>
+          <span class="kpi-label">{{ k.label }}</span>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ k.value }}</span>
+          @if (k.sub) { <span class="kpi-sub">{{ k.sub }}</span> }
+        </div>
+      </div>
+    }
   </div>
 
   <div class="two-col">
