@@ -2,6 +2,8 @@
 
 export type VehicleStatus = 'InStock' | 'Reserved' | 'Sold';
 
+export type BodyType = 'Sedan' | 'Suv' | 'Truck' | 'Hatchback' | 'Coupe' | 'Van' | 'Wagon';
+
 export type ActionType =
   | 'PriceReductionPlanned' | 'MoveToAuction' | 'Promote'
   | 'TransferToBranch' | 'Recondition' | 'Other';
@@ -19,6 +21,7 @@ export interface Vehicle {
   trim?: string | null;
   color?: string | null;
   mileage: number;
+  bodyType: BodyType;
   listPrice: number;
   cost: number;
   status: VehicleStatus;

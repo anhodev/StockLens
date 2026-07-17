@@ -11,7 +11,7 @@ public static class MappingExtensions
     {
         var openActions = v.Actions?.Count(a => a.Status is ActionStatus.Open or ActionStatus.InProgress) ?? 0;
         return new VehicleDto(
-            v.Id, v.Vin, v.Make, v.Model, v.Year, v.Trim, v.Color, v.Mileage,
+            v.Id, v.Vin, v.Make, v.Model, v.Year, v.Trim, v.Color, v.Mileage, v.BodyType,
             v.ListPrice, v.Cost, v.Status, v.AcquiredDate, v.SoldDate,
             v.DaysInInventory(asOf), v.IsAgingStock(asOf), openActions);
     }

@@ -16,6 +16,8 @@ public class Vehicle
     public string? Color { get; set; }
     public int Mileage { get; set; }
 
+    public BodyType BodyType { get; set; } = BodyType.Sedan;
+
     /// <summary>Current asking price.</summary>
     public decimal ListPrice { get; set; }
 

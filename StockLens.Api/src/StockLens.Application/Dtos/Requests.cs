@@ -13,7 +13,8 @@ public record CreateVehicleRequest(
     decimal ListPrice,
     decimal Cost,
     DateOnly AcquiredDate,
-    VehicleStatus Status = VehicleStatus.InStock);
+    VehicleStatus Status = VehicleStatus.InStock,
+    BodyType BodyType = BodyType.Sedan);
 
 public record UpdateVehicleRequest(
     string Make,
@@ -26,7 +27,8 @@ public record UpdateVehicleRequest(
     decimal Cost,
     VehicleStatus Status,
     DateOnly AcquiredDate,
-    DateOnly? SoldDate);
+    DateOnly? SoldDate,
+    BodyType BodyType = BodyType.Sedan);
 
 /// <summary>Query filter for the inventory list. All fields optional.</summary>
 public record VehicleFilter(

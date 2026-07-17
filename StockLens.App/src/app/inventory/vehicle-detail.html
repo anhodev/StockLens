@@ -23,6 +23,7 @@
       </div>
       <div><span class="muted">List price</span><strong>{{ vehicle.listPrice | currency:'USD':'symbol':'1.0-0' }}</strong></div>
       <div><span class="muted">Cost</span><strong>{{ vehicle.cost | currency:'USD':'symbol':'1.0-0' }}</strong></div>
+      <div><span class="muted">Body</span><strong>{{ vehicle.bodyType }}</strong></div>
       <div><span class="muted">Mileage</span><strong>{{ vehicle.mileage | number }} mi</strong></div>
       <div><span class="muted">Acquired</span><strong>{{ vehicle.acquiredDate | date:'mediumDate' }}</strong></div>
     </section>

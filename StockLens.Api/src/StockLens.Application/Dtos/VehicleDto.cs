@@ -11,6 +11,7 @@ public record VehicleDto(
     string? Trim,
     string? Color,
     int Mileage,
+    BodyType BodyType,
     decimal ListPrice,
     decimal Cost,
     VehicleStatus Status,

@@ -16,28 +16,32 @@ public static class DatabaseSeeder
         var rnd = new Random(42);
 
         // --- In-stock vehicles, spread across ages so some cross the 90-day aging line. ---
-        var specs = new (string Make, string Model, int Year, string Trim, string Color, int Ageeeed, decimal List, decimal Cost, int Miles)[]
+        var specs = new (string Make, string Model, int Year, string Trim, string Color, int Ageeeed, decimal List, decimal Cost, int Miles, BodyType Body)[]
         {
-            ("Toyota",   "Corolla",  2023, "LE",       "White",  12,  22500, 19000, 8200),
-            ("Toyota",   "RAV4",     2022, "XLE",      "Silver", 47,  31000, 26500, 21000),
-            ("Toyota",   "Camry",    2021, "SE",       "Black",  118, 26000, 22000, 34000),
-            ("Honda",    "Civic",    2023, "Sport",    "Blue",   8,   26500, 22800, 5400),
-            ("Honda",    "CR-V",     2020, "EX",       "Grey",   135, 24000, 20500, 52000),
-            ("Honda",    "Accord",   2022, "Touring",  "White",  73,  33000, 28500, 18000),
-            ("Ford",     "F-150",    2021, "Lariat",   "Red",    156, 42000, 36000, 41000),
-            ("Ford",     "Explorer", 2022, "XLT",      "Black",  61,  38000, 33000, 27000),
-            ("Ford",     "Escape",   2020, "SE",       "Blue",   201, 19500, 16500, 63000),
-            ("BMW",      "3 Series", 2021, "330i",     "Black",  99,  38500, 33000, 29000),
-            ("BMW",      "X5",       2022, "xDrive40i","White",  33,  61000, 54000, 15000),
-            ("Tesla",    "Model 3",  2023, "Long Range","White", 5,   41000, 37000, 3200),
-            ("Tesla",    "Model Y",  2022, "Performance","Grey", 88,  52000, 46000, 12000),
-            ("Chevrolet","Silverado",2021, "LT",       "Silver", 172, 39000, 34000, 38000),
-            ("Chevrolet","Equinox",  2023, "LT",       "Red",    26,  27000, 23500, 9000),
-            ("Hyundai",  "Tucson",   2022, "SEL",      "Blue",   112, 28000, 24000, 20000),
-            ("Hyundai",  "Elantra",  2023, "SEL",      "White",  40,  21000, 18000, 11000),
-            ("Kia",      "Sportage", 2021, "EX",       "Grey",   145, 25500, 21500, 33000),
-            ("Nissan",   "Rogue",    2020, "SV",       "Black",  188, 20500, 17500, 58000),
-            ("Nissan",   "Altima",   2022, "SR",       "Silver", 54,  24500, 21000, 22000),
+            ("Toyota",   "Corolla",  2023, "LE",       "White",  12,  22500, 19000, 8200,  BodyType.Sedan),
+            ("Toyota",   "RAV4",     2022, "XLE",      "Silver", 47,  31000, 26500, 21000, BodyType.Suv),
+            ("Toyota",   "Camry",    2021, "SE",       "Black",  118, 26000, 22000, 34000, BodyType.Sedan),
+            ("Honda",    "Civic",    2023, "Sport",    "Blue",   8,   26500, 22800, 5400,  BodyType.Sedan),
+            ("Honda",    "CR-V",     2020, "EX",       "Grey",   135, 24000, 20500, 52000, BodyType.Suv),
+            ("Honda",    "Accord",   2022, "Touring",  "White",  73,  33000, 28500, 18000, BodyType.Sedan),
+            ("Ford",     "F-150",    2021, "Lariat",   "Red",    156, 42000, 36000, 41000, BodyType.Truck),
+            ("Ford",     "Explorer", 2022, "XLT",      "Black",  61,  38000, 33000, 27000, BodyType.Suv),
+            ("Ford",     "Escape",   2020, "SE",       "Blue",   201, 19500, 16500, 63000, BodyType.Suv),
+            ("BMW",      "3 Series", 2021, "330i",     "Black",  99,  38500, 33000, 29000, BodyType.Sedan),
+            ("BMW",      "X5",       2022, "xDrive40i","White",  33,  61000, 54000, 15000, BodyType.Suv),
+            ("Tesla",    "Model 3",  2023, "Long Range","White", 5,   41000, 37000, 3200,  BodyType.Sedan),
+            ("Tesla",    "Model Y",  2022, "Performance","Grey", 88,  52000, 46000, 12000, BodyType.Suv),
+            ("Chevrolet","Silverado",2021, "LT",       "Silver", 172, 39000, 34000, 38000, BodyType.Truck),
+            ("Chevrolet","Equinox",  2023, "LT",       "Red",    26,  27000, 23500, 9000,  BodyType.Suv),
+            ("Hyundai",  "Tucson",   2022, "SEL",      "Blue",   112, 28000, 24000, 20000, BodyType.Suv),
+            ("Hyundai",  "Elantra",  2023, "SEL",      "White",  40,  21000, 18000, 11000, BodyType.Sedan),
+            ("Kia",      "Sportage", 2021, "EX",       "Grey",   145, 25500, 21500, 33000, BodyType.Suv),
+            ("Nissan",   "Rogue",    2020, "SV",       "Black",  188, 20500, 17500, 58000, BodyType.Suv),
+            ("Nissan",   "Altima",   2022, "SR",       "Silver", 54,  24500, 21000, 22000, BodyType.Sedan),
+            ("Volkswagen","Golf GTI",2022, "Autobahn", "Red",    64,  32000, 27500, 16000, BodyType.Hatchback),
+            ("Chrysler", "Pacifica", 2021, "Touring L","Silver", 129, 33500, 29000, 44000, BodyType.Van),
+            ("Subaru",   "Outback",  2022, "Premium",  "Green",  35,  31500, 27000, 19000, BodyType.Wagon),
+            ("Ford",     "Mustang",  2023, "GT",       "Red",    22,  47000, 41000, 6100,  BodyType.Coupe),
         };
 
         var vehicles = new List<Vehicle>();
@@ -53,6 +57,7 @@ public static class DatabaseSeeder
                 Trim = s.Trim,
                 Color = s.Color,
                 Mileage = s.Miles,
+                BodyType = s.Body,
                 ListPrice = s.List,
                 Cost = s.Cost,
                 Status = VehicleStatus.InStock,
@@ -63,16 +68,16 @@ public static class DatabaseSeeder
         }
 
         // --- Sold vehicles + matching sales records for the "top sales" panel. ---
-        var soldSpecs = new (string Make, string Model, int Year, decimal Sale, decimal Cost, int DaysAgoSold, int DaysToSell)[]
+        var soldSpecs = new (string Make, string Model, int Year, decimal Sale, decimal Cost, int DaysAgoSold, int DaysToSell, BodyType Body)[]
         {
-            ("Toyota", "Highlander", 2023, 44000, 38000, 4,  22),
-            ("BMW",    "X3",         2022, 47500, 41000, 9,  31),
-            ("Tesla",  "Model Y",    2023, 53000, 47000, 2,  15),
-            ("Ford",   "Bronco",     2022, 46000, 40000, 18, 40),
-            ("Honda",  "Pilot",      2021, 36000, 31000, 12, 55),
-            ("Toyota", "Tacoma",     2022, 39500, 34000, 25, 28),
-            ("Chevrolet","Tahoe",    2021, 58000, 51000, 6,  47),
-            ("Hyundai","Santa Fe",   2023, 33500, 29000, 21, 19),
+            ("Toyota", "Highlander", 2023, 44000, 38000, 4,  22, BodyType.Suv),
+            ("BMW",    "X3",         2022, 47500, 41000, 9,  31, BodyType.Suv),
+            ("Tesla",  "Model Y",    2023, 53000, 47000, 2,  15, BodyType.Suv),
+            ("Ford",   "Bronco",     2022, 46000, 40000, 18, 40, BodyType.Suv),
+            ("Honda",  "Pilot",      2021, 36000, 31000, 12, 55, BodyType.Suv),
+            ("Toyota", "Tacoma",     2022, 39500, 34000, 25, 28, BodyType.Truck),
+            ("Chevrolet","Tahoe",    2021, 58000, 51000, 6,  47, BodyType.Suv),
+            ("Hyundai","Santa Fe",   2023, 33500, 29000, 21, 19, BodyType.Suv),
         };
 
         var sales = new List<SalesRecord>();
@@ -88,6 +93,7 @@ public static class DatabaseSeeder
                 Trim = "—",
                 Color = "Various",
                 Mileage = rnd.Next(2000, 40000),
+                BodyType = s.Body,
                 ListPrice = s.Sale,
                 Cost = s.Cost,
                 Status = VehicleStatus.Sold,

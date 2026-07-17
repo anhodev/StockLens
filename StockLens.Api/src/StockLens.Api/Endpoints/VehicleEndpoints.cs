@@ -159,6 +159,7 @@ public static class VehicleEndpoints
             Trim = req.Trim,
             Color = req.Color,
             Mileage = req.Mileage,
+            BodyType = req.BodyType,
             ListPrice = req.ListPrice,
             Cost = req.Cost,
             Status = req.Status,
@@ -194,6 +195,7 @@ public static class VehicleEndpoints
         v.Trim = req.Trim;
         v.Color = req.Color;
         v.Mileage = req.Mileage;
+        v.BodyType = req.BodyType;
         v.ListPrice = req.ListPrice;
         v.Cost = req.Cost;
         v.Status = req.Status;

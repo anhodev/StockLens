@@ -23,7 +23,9 @@ public class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
         builder.Property(x => x.Cost).HasColumnType("numeric(12,2)");
 
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
+        builder.Property(x => x.BodyType).HasConversion<string>().HasMaxLength(16);
 
+        builder.HasIndex(x => x.BodyType);
         builder.HasIndex(x => x.Make);
         builder.HasIndex(x => x.Status);
         builder.HasIndex(x => x.AcquiredDate);
