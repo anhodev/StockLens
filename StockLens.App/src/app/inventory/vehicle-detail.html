@@ -13,7 +13,7 @@
       <div><span class="muted">Status</span>
         <span class="badge"
           [ngClass]="{'badge-instock': vehicle.status==='InStock','badge-reserved': vehicle.status==='Reserved','badge-sold': vehicle.status==='Sold'}">
-          {{ vehicle.status }}
+          {{ statusLabel(vehicle.status) }}
         </span>
       </div>
       <div><span class="muted">Days in inventory</span>

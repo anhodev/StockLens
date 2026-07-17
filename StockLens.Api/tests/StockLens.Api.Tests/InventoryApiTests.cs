@@ -72,6 +72,63 @@ public class InventoryApiTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal("Test action", actions![0].Note);
     }
 
+    [Theory]
+    // A vehicle reads as "{Year} {Make} {Model}" on screen, so searching that phrase must work.
+    [InlineData("2020 Ford Escape")]
+    [InlineData("ford escape")]      // case-insensitive
+    [InlineData("escape ford")]      // term order must not matter
+    [InlineData("  ford   escape ")] // extra whitespace tolerated
+    [InlineData("Escape")]
+    [InlineData("2020")]             // year-only term
+    public async Task Search_matches_across_fields(string term)
+    {
+        var client = _factory.CreateClient();
+
+        var page = await client.GetFromJsonAsync<PagedResult<VehicleDto>>(
+            $"/api/vehicles?search={Uri.EscapeDataString(term)}&pageSize=100", Json);
+
+        Assert.NotNull(page);
+        Assert.Contains(page!.Items, v => v is { Year: 2020, Make: "Ford", Model: "Escape" });
+    }
+
+    [Fact]
+    public async Task Search_terms_narrow_results_rather_than_widen_them()
+    {
+        var client = _factory.CreateClient();
+
+        var ford = await client.GetFromJsonAsync<PagedResult<VehicleDto>>(
+            "/api/vehicles?search=ford&pageSize=100", Json);
+        var fordEscape = await client.GetFromJsonAsync<PagedResult<VehicleDto>>(
+            "/api/vehicles?search=ford%20escape&pageSize=100", Json);
+
+        // Every term must match (AND), so adding "escape" can only shrink the "ford" set.
+        Assert.True(fordEscape!.Total <= ford!.Total);
+        Assert.All(fordEscape.Items, v => Assert.Equal("Escape", v.Model));
+    }
+
+    [Fact]
+    public async Task Search_with_no_match_returns_empty()
+    {
+        var client = _factory.CreateClient();
+
+        var page = await client.GetFromJsonAsync<PagedResult<VehicleDto>>(
+            "/api/vehicles?search=ford%20lamborghini&pageSize=100", Json);
+
+        Assert.Empty(page!.Items);
+    }
+
+    [Fact]
+    public async Task Search_treats_like_wildcards_literally()
+    {
+        var client = _factory.CreateClient();
+
+        // "%" must not act as a wildcard that matches everything.
+        var page = await client.GetFromJsonAsync<PagedResult<VehicleDto>>(
+            "/api/vehicles?search=%25&pageSize=100", Json);
+
+        Assert.Empty(page!.Items);
+    }
+
     [Fact]
     public async Task Invalid_vehicle_returns_validation_problem()
     {

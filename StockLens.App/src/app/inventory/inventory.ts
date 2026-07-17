@@ -1,6 +1,8 @@
 import { CurrencyPipe, DecimalPipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, filter, map, skip } from 'rxjs';
 import { ApiService } from '../core/api.service';
 import { RealtimeService } from '../core/realtime.service';
 import { Vehicle, VehicleFilter, VehicleStatus } from '../core/models';
@@ -8,6 +10,11 @@ import { VehicleDetailComponent } from './vehicle-detail';
 import { CarImageComponent } from './car-image';
 
 type ViewMode = 'table' | 'grid';
+type SortKey = 'age' | 'price' | 'make';
+
+/** Minimum term length before a search auto-runs; a cleared box always re-runs. */
+const MIN_SEARCH_LENGTH = 3;
+const SEARCH_DEBOUNCE_MS = 300;
 
 @Component({
   selector: 'app-inventory',
@@ -25,29 +32,59 @@ export class InventoryComponent implements OnInit, OnDestroy {
   readonly total = signal(0);
   readonly loading = signal(false);
   readonly selected = signal<Vehicle | null>(null);
+  readonly agingCount = signal(0);
 
   readonly statuses: VehicleStatus[] = ['InStock', 'Reserved', 'Sold'];
   readonly makes = signal<string[]>([]);
-  readonly view = signal<ViewMode>('table');
+  readonly view = signal<ViewMode>('grid');
 
   // Filter form state.
-  search = '';
+  readonly search = signal('');
   make = '';
   status: VehicleStatus | '' = '';
   agingOnly = false;
-  sortBy: 'age' | 'price' | 'make' = 'age';
+  sortBy: SortKey = 'age';
   desc = true;
   page = 1;
-  readonly pageSize = 25;
+  readonly pageSize = 24;
+
+  /** The term the currently-displayed results were fetched with; guards against duplicate requests. */
+  private lastAppliedSearch = '';
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
+
+  /** Nudge shown while a term is too short to trigger a search. */
+  readonly searchHint = computed(() => {
+    const term = this.search().trim();
+    return term.length > 0 && term.length < MIN_SEARCH_LENGTH
+      ? `Type ${MIN_SEARCH_LENGTH}+ characters to search`
+      : '';
+  });
+
+  constructor() {
+    // Auto-run the search once the term reaches MIN_SEARCH_LENGTH, or when it is
+    // cleared entirely. Debounced so typing doesn't fire a request per keystroke.
+    toObservable(this.search)
+      .pipe(
+        skip(1), // ignore the initial value emitted on subscribe
+        map((term) => term.trim()),
+        debounceTime(SEARCH_DEBOUNCE_MS),
+        distinctUntilChanged(),
+        filter((term) => term.length === 0 || term.length >= MIN_SEARCH_LENGTH),
+        // Skip terms already reflected on screen (e.g. after Enter or Reset all).
+        filter((term) => term !== this.lastAppliedSearch),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.applyFilters());
+  }
 
   ngOnInit(): void {
     this.load();
     this.loadMakes();
+    this.loadAgingCount();
     // A vehicle or action change anywhere refreshes the current list view
     // (e.g. open-action counts) — live across all connected dashboards.
-    this.unsubs.push(this.realtime.onVehicle(() => this.load()));
+    this.unsubs.push(this.realtime.onVehicle(() => { this.load(); this.loadAgingCount(); }));
     this.unsubs.push(this.realtime.onAction(() => this.load()));
   }
 
@@ -57,7 +94,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
 
   private currentFilter(): VehicleFilter {
     return {
-      search: this.search.trim() || undefined,
+      search: this.search().trim() || undefined,
       make: this.make || undefined,
       status: this.status || undefined,
       agingOnly: this.agingOnly || undefined,
@@ -81,24 +118,49 @@ export class InventoryComponent implements OnInit, OnDestroy {
   }
 
   private loadMakes(): void {
-    // Derive the make dropdown from the full inventory once.
+    // Derive the brand dropdown from the full inventory once.
     this.api.getVehicles({ pageSize: 200 }).subscribe((res) => {
       this.makes.set([...new Set(res.items.map((v) => v.make))].sort());
     });
   }
 
+  private loadAgingCount(): void {
+    this.api.getAgingStock().subscribe((list) => this.agingCount.set(list.length));
+  }
+
   applyFilters(): void {
+    this.lastAppliedSearch = this.search().trim();
     this.page = 1;
     this.load();
   }
 
   resetFilters(): void {
-    this.search = '';
+    this.search.set('');
     this.make = '';
     this.status = '';
     this.agingOnly = false;
     this.sortBy = 'age';
     this.desc = true;
+    this.applyFilters();
+  }
+
+  setStatus(status: VehicleStatus | ''): void {
+    this.status = status;
+    this.applyFilters();
+  }
+
+  toggleAging(): void {
+    this.agingOnly = !this.agingOnly;
+    this.applyFilters();
+  }
+
+  setSort(key: SortKey): void {
+    this.sortBy = key;
+    this.applyFilters();
+  }
+
+  toggleDesc(): void {
+    this.desc = !this.desc;
     this.applyFilters();
   }
 
@@ -126,6 +188,32 @@ export class InventoryComponent implements OnInit, OnDestroy {
       case 'InStock': return 'badge-instock';
       case 'Reserved': return 'badge-reserved';
       default: return 'badge-sold';
+    }
+  }
+
+  statusLabel(status: VehicleStatus | ''): string {
+    switch (status) {
+      case 'InStock': return 'In stock';
+      case 'Reserved': return 'Reserved';
+      case 'Sold': return 'Sold';
+      default: return 'Any';
+    }
+  }
+
+  /** Label for the active sort when descending (the API treats age-desc as oldest-first). */
+  sortDescLabel(): string {
+    switch (this.sortBy) {
+      case 'price': return 'Highest price';
+      case 'make': return 'Brand Z–A';
+      default: return 'Oldest first';
+    }
+  }
+
+  sortAscLabel(): string {
+    switch (this.sortBy) {
+      case 'price': return 'Lowest price';
+      case 'make': return 'Brand A–Z';
+      default: return 'Newest first';
     }
   }
 }

@@ -98,4 +98,14 @@ export class VehicleDetailComponent implements OnChanges, OnInit, OnDestroy {
       default: return 'badge-sold';
     }
   }
+
+  /** Human-readable vehicle status, matching the wording used on the inventory cards. */
+  statusLabel(status: string): string {
+    switch (status) {
+      case 'InStock': return 'In stock';
+      case 'Reserved': return 'Reserved';
+      case 'Sold': return 'Sold';
+      default: return status;
+    }
+  }
 }

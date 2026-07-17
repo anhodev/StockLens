@@ -13,6 +13,13 @@ namespace StockLens.Api.Endpoints;
 public static class VehicleEndpoints
 {
     private const string LogCategory = "StockLens.Api.Vehicles";
+    private const string LikeEscape = "\\";
+
+    /// <summary>Escapes LIKE wildcards so a term such as "50%" is matched literally.</summary>
+    private static string EscapeLike(string term) => term
+        .Replace("\\", "\\\\")
+        .Replace("%", "\\%")
+        .Replace("_", "\\_");
 
     public static IEndpointRouteBuilder MapVehicleEndpoints(this IEndpointRouteBuilder app)
     {
@@ -40,13 +47,24 @@ public static class VehicleEndpoints
             query = query.Where(v => v.Model == filter.Model);
         if (filter.Status.HasValue)
             query = query.Where(v => v.Status == filter.Status);
+        // Free-text search matches the way a vehicle reads on screen ("2020 Ford Escape"):
+        // every whitespace-separated term must appear in at least one field, so terms
+        // narrow the result set rather than each having to match a single column alone.
         if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            var s = filter.Search.Trim();
-            query = query.Where(v =>
-                EF.Functions.ILike(v.Vin, $"%{s}%") ||
-                EF.Functions.ILike(v.Make, $"%{s}%") ||
-                EF.Functions.ILike(v.Model, $"%{s}%"));
+            var terms = filter.Search.Split(' ', StringSplitOptions.RemoveEmptyEntries
+                                                 | StringSplitOptions.TrimEntries);
+            foreach (var term in terms)
+            {
+                var pattern = $"%{EscapeLike(term)}%";
+                query = query.Where(v =>
+                    EF.Functions.ILike(v.Vin, pattern, LikeEscape) ||
+                    EF.Functions.ILike(v.Make, pattern, LikeEscape) ||
+                    EF.Functions.ILike(v.Model, pattern, LikeEscape) ||
+                    EF.Functions.ILike(v.Trim!, pattern, LikeEscape) ||
+                    EF.Functions.ILike(v.Color!, pattern, LikeEscape) ||
+                    EF.Functions.ILike(v.Year.ToString(), pattern, LikeEscape));
+            }
         }
 
         // Age filters translate to acquisition-date bounds relative to today.

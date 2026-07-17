@@ -1,114 +1,160 @@
-<div class="card filters">
-  <div class="filter-field grow">
-    <label>Search</label>
-    <input [(ngModel)]="search" (keyup.enter)="applyFilters()" placeholder="VIN, make or model" />
-  </div>
-  <div class="filter-field">
-    <label>Make</label>
-    <select [(ngModel)]="make">
-      <option value="">All</option>
-      @for (m of makes(); track m) { <option [value]="m">{{ m }}</option> }
-    </select>
-  </div>
-  <div class="filter-field">
-    <label>Status</label>
-    <select [(ngModel)]="status">
-      <option value="">All</option>
-      @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
-    </select>
-  </div>
-  <div class="filter-field">
-    <label>Sort by</label>
-    <select [(ngModel)]="sortBy">
-      <option value="age">Age</option>
-      <option value="price">Price</option>
-      <option value="make">Make</option>
-    </select>
-  </div>
-  <label class="aging-toggle">
-    <input type="checkbox" [(ngModel)]="agingOnly" />
-    Aging only
-  </label>
-  <button class="btn-primary" (click)="applyFilters()">Apply</button>
-  <button class="btn-ghost" (click)="resetFilters()">Reset</button>
+<div class="inventory-layout">
+  <!-- ---- Filter rail ---- -->
+  <aside class="card rail">
+    <header class="rail-head">
+      <strong>Filter by</strong>
+      <button class="link" (click)="resetFilters()">Reset all</button>
+    </header>
 
-  <div class="view-toggle" role="group" aria-label="View mode">
-    <button [class.active]="view() === 'table'" (click)="setView('table')" title="Table view" aria-label="Table view">☰ Table</button>
-    <button [class.active]="view() === 'grid'" (click)="setView('grid')" title="Grid view" aria-label="Grid view">▦ Grid</button>
-  </div>
-</div>
+    <section class="rail-section">
+      <span class="eyebrow">Search</span>
+      <input [ngModel]="search()" (ngModelChange)="search.set($event)"
+             (keyup.enter)="applyFilters()" placeholder="VIN, make or model"
+             aria-label="Search inventory by VIN, make or model" />
+      @if (searchHint(); as hint) { <span class="hint">{{ hint }}</span> }
+    </section>
 
-@if (view() === 'table') {
-  <div class="card list">
-    <table>
-      <thead>
-        <tr>
-          <th>Vehicle</th><th>VIN</th><th>Status</th>
-          <th class="right">Days in stock</th><th class="right">List price</th><th class="right">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (v of vehicles(); track v.id) {
-          <tr class="clickable" [class.aging-row]="v.isAgingStock" (click)="open(v)">
-            <td>
-              <strong>{{ v.year }} {{ v.make }} {{ v.model }}</strong>
-              <span class="muted"> {{ v.trim }}</span>
-            </td>
-            <td class="muted mono">{{ v.vin }}</td>
-            <td><span class="badge" [ngClass]="statusBadge(v.status)">{{ v.status }}</span></td>
-            <td class="right">
-              <span [class.aging-text]="v.isAgingStock">{{ v.daysInInventory }}</span>
-              @if (v.isAgingStock) { <span class="badge badge-aging">AGING</span> }
-            </td>
-            <td class="right nowrap">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</td>
-            <td class="right">
-              @if (v.openActionCount > 0) { <span class="badge badge-open">{{ v.openActionCount }} open</span> }
-              @else { <span class="muted">—</span> }
-            </td>
-          </tr>
-        } @empty {
-          <tr><td colspan="6" class="muted">No vehicles match these filters.</td></tr>
+    <section class="rail-section">
+      <span class="eyebrow">Status</span>
+      <div class="segmented cols-2">
+        <button [class.on]="status === ''" (click)="setStatus('')">Any</button>
+        @for (s of statuses; track s) {
+          <button [class.on]="status === s" (click)="setStatus(s)">{{ statusLabel(s) }}</button>
         }
-      </tbody>
-    </table>
-  </div>
-} @else {
-  <div class="grid">
-    @for (v of vehicles(); track v.id) {
-      <article class="car-card card" [class.aging-card]="v.isAgingStock" (click)="open(v)">
-        <div class="car-photo">
-          <app-car-image [make]="v.make" [model]="v.model" [color]="v.color" [imageUrl]="v.imageUrl" />
-          <span class="badge status-chip" [ngClass]="statusBadge(v.status)">{{ v.status }}</span>
-          @if (v.isAgingStock) { <span class="badge badge-aging aging-chip">AGING · {{ v.daysInInventory }}d</span> }
-        </div>
-        <div class="car-body">
-          <div class="car-title">
-            <strong>{{ v.year }} {{ v.make }} {{ v.model }}</strong>
-            <span class="muted">{{ v.trim }} · {{ v.color }}</span>
-          </div>
-          <div class="car-meta">
-            <span class="price">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</span>
-            <span class="muted">{{ v.mileage | number }} mi</span>
-          </div>
-          <div class="car-foot">
-            <span class="muted" [class.aging-text]="v.isAgingStock">{{ v.daysInInventory }} days in stock</span>
-            @if (v.openActionCount > 0) { <span class="badge badge-open">{{ v.openActionCount }} open</span> }
-          </div>
-        </div>
-      </article>
-    } @empty {
-      <p class="muted empty">No vehicles match these filters.</p>
-    }
-  </div>
-}
+      </div>
+    </section>
 
-<div class="list-foot">
-  <span class="muted">{{ total() }} vehicle(s){{ loading() ? ' · loading…' : '' }}</span>
-  <div class="pager">
-    <button class="btn-ghost" [disabled]="page <= 1" (click)="changePage(-1)">‹ Prev</button>
-    <span class="muted">Page {{ page }} / {{ totalPages() }}</span>
-    <button class="btn-ghost" [disabled]="page >= totalPages()" (click)="changePage(1)">Next ›</button>
-  </div>
+    <section class="rail-section toggle-row">
+      <div>
+        <span class="eyebrow">Aging stock only</span>
+        <span class="hint">In stock &gt; 90 days</span>
+      </div>
+      <button class="switch" role="switch" [attr.aria-checked]="agingOnly"
+              [class.on]="agingOnly" (click)="toggleAging()">
+        <span class="knob"></span>
+      </button>
+    </section>
+
+    <section class="rail-section">
+      <span class="eyebrow">Car brand</span>
+      <select [(ngModel)]="make" (change)="applyFilters()">
+        <option value="">All brands</option>
+        @for (m of makes(); track m) { <option [value]="m">{{ m }}</option> }
+      </select>
+    </section>
+
+    <section class="rail-section">
+      <span class="eyebrow">Sort by</span>
+      <div class="segmented cols-3">
+        <button [class.on]="sortBy === 'age'" (click)="setSort('age')">Age</button>
+        <button [class.on]="sortBy === 'price'" (click)="setSort('price')">Price</button>
+        <button [class.on]="sortBy === 'make'" (click)="setSort('make')">Brand</button>
+      </div>
+    </section>
+
+    <section class="rail-section rail-summary">
+      <div class="sum-row"><span class="muted">Aging on the lot</span><strong class="aging-text">{{ agingCount() }}</strong></div>
+      <div class="sum-row"><span class="muted">Showing</span><strong>{{ vehicles().length }} of {{ total() }}</strong></div>
+    </section>
+  </aside>
+
+  <!-- ---- Results ---- -->
+  <section class="results">
+    <header class="results-head">
+      <h2>{{ total() }} vehicles in inventory</h2>
+      <div class="results-actions">
+        <button class="link-toggle" (click)="toggleDesc()">
+          {{ desc ? sortDescLabel() : sortAscLabel() }} <span class="caret">⌄</span>
+        </button>
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button [class.on]="view() === 'grid'" (click)="setView('grid')" aria-label="Grid view">▦</button>
+          <button [class.on]="view() === 'table'" (click)="setView('table')" aria-label="Table view">☰</button>
+        </div>
+      </div>
+    </header>
+
+    @if (view() === 'grid') {
+      <div class="grid">
+        @for (v of vehicles(); track v.id) {
+          <article class="car-card" [class.aging-card]="v.isAgingStock" (click)="open(v)">
+            <div class="card-meta">
+              <span class="meta-left">
+                <span class="clock" aria-hidden="true">◷</span>
+                <strong [class.aging-text]="v.isAgingStock">{{ v.daysInInventory }}d</strong>
+                <span class="dot-sep">·</span>
+                <span class="badge" [ngClass]="statusBadge(v.status)">{{ statusLabel(v.status) }}</span>
+              </span>
+              @if (v.isAgingStock) {
+                <span class="flag" title="Aging stock — over 90 days">▲</span>
+              } @else if (v.openActionCount > 0) {
+                <span class="badge badge-open">{{ v.openActionCount }}</span>
+              }
+            </div>
+
+            <div class="car-photo">
+              <app-car-image [make]="v.make" [model]="v.model" [color]="v.color" [imageUrl]="v.imageUrl" />
+            </div>
+
+            <div class="car-info">
+              <div class="info-row">
+                <strong class="title">{{ v.year }} {{ v.make }} {{ v.model }}</strong>
+                <strong class="price">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</strong>
+              </div>
+              <div class="info-row">
+                <span class="spec muted">{{ v.trim }} · {{ v.mileage | number }} mi · {{ v.color }}</span>
+                <span class="unit muted">list</span>
+              </div>
+            </div>
+          </article>
+        } @empty {
+          <p class="empty muted">No vehicles match these filters.</p>
+        }
+      </div>
+    } @else {
+      <div class="card list">
+        <table>
+          <thead>
+            <tr>
+              <th>Vehicle</th><th>VIN</th><th>Status</th>
+              <th class="right">Days in stock</th><th class="right">List price</th><th class="right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of vehicles(); track v.id) {
+              <tr class="clickable" [class.aging-row]="v.isAgingStock" (click)="open(v)">
+                <td>
+                  <strong>{{ v.year }} {{ v.make }} {{ v.model }}</strong>
+                  <span class="muted"> {{ v.trim }}</span>
+                </td>
+                <td class="muted mono">{{ v.vin }}</td>
+                <td><span class="badge" [ngClass]="statusBadge(v.status)">{{ statusLabel(v.status) }}</span></td>
+                <td class="right">
+                  <span [class.aging-text]="v.isAgingStock">{{ v.daysInInventory }}</span>
+                  @if (v.isAgingStock) { <span class="badge badge-aging">AGING</span> }
+                </td>
+                <td class="right nowrap">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</td>
+                <td class="right">
+                  @if (v.openActionCount > 0) { <span class="badge badge-open">{{ v.openActionCount }} open</span> }
+                  @else { <span class="muted">—</span> }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="muted">No vehicles match these filters.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <footer class="results-foot">
+      <span class="muted">{{ total() }} vehicle(s){{ loading() ? ' · loading…' : '' }}</span>
+      <div class="pager">
+        <button class="btn-ghost" [disabled]="page <= 1" (click)="changePage(-1)">‹ Prev</button>
+        <span class="muted">Page {{ page }} / {{ totalPages() }}</span>
+        <button class="btn-ghost" [disabled]="page >= totalPages()" (click)="changePage(1)">Next ›</button>
+      </div>
+    </footer>
+  </section>
 </div>
 
 @if (selected(); as v) {

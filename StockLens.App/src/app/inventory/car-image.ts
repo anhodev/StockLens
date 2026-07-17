@@ -29,30 +29,32 @@ const COLOR_MAP: Record<string, string> = {
     } @else {
       <svg viewBox="0 0 240 120" preserveAspectRatio="xMidYMid meet" role="img"
            [attr.aria-label]="make + ' ' + model">
-        <!-- ground shadow -->
-        <ellipse cx="120" cy="99" rx="92" ry="7" fill="rgba(0,0,0,0.28)" />
+        <!-- soft contact shadow, tuned for the light card plate -->
+        <ellipse cx="120" cy="99" rx="88" ry="6" fill="rgba(16,17,26,0.14)" />
 
         <!-- cabin / roof -->
-        <path d="M74 44 L98 24 L150 24 L174 44 Z" [attr.fill]="body()" />
+        <path d="M74 44 L98 24 L150 24 L174 44 Z"
+              [attr.fill]="body()" stroke="rgba(16,17,26,0.10)" stroke-width="1" />
         <!-- windows -->
-        <path d="M96 42 L104 29 L120 29 L120 42 Z" fill="#0b1220" opacity="0.85" />
-        <path d="M126 42 L126 29 L146 29 L158 42 Z" fill="#0b1220" opacity="0.85" />
+        <path d="M96 42 L104 29 L120 29 L120 42 Z" fill="#38414f" />
+        <path d="M126 42 L126 29 L146 29 L158 42 Z" fill="#38414f" />
 
-        <!-- body -->
+        <!-- body (outlined so pale colours stay legible on a white card) -->
         <path d="M32 62 Q32 44 54 44 L188 44 Q206 44 210 60 L212 70
-                 Q213 80 202 80 L44 80 Q32 80 32 68 Z" [attr.fill]="body()" />
+                 Q213 80 202 80 L44 80 Q32 80 32 68 Z"
+              [attr.fill]="body()" stroke="rgba(16,17,26,0.10)" stroke-width="1" />
         <!-- highlight strip -->
-        <path d="M40 63 L204 63" [attr.stroke]="highlight()" stroke-width="2" opacity="0.35" />
+        <path d="M40 63 L204 63" [attr.stroke]="highlight()" stroke-width="2" opacity="0.25" />
 
         <!-- headlight + taillight -->
-        <circle cx="205" cy="60" r="3.4" fill="#fde68a" />
-        <rect x="33" y="57" width="5" height="6" rx="1.5" fill="#f87171" />
+        <circle cx="205" cy="60" r="3.4" fill="#fbbf24" />
+        <rect x="33" y="57" width="5" height="6" rx="1.5" fill="#ef4444" />
 
         <!-- wheels -->
-        <circle cx="80" cy="82" r="17" fill="#12161f" />
-        <circle cx="80" cy="82" r="7.5" fill="#4b5563" />
-        <circle cx="168" cy="82" r="17" fill="#12161f" />
-        <circle cx="168" cy="82" r="7.5" fill="#4b5563" />
+        <circle cx="80" cy="82" r="17" fill="#23272f" />
+        <circle cx="80" cy="82" r="7.5" fill="#9aa1ad" />
+        <circle cx="168" cy="82" r="17" fill="#23272f" />
+        <circle cx="168" cy="82" r="7.5" fill="#9aa1ad" />
       </svg>
     }
   `,

@@ -1,28 +1,49 @@
-<header class="topbar">
-  <div class="brand">
-    <span class="logo">◧</span>
-    <div class="brand-text">
-      <span class="brand-name">StockLens</span>
-      <span class="brand-sub">Intelligent Inventory Dashboard</span>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="logo">◧</span>
+      <div class="brand-text">
+        <span class="brand-name">STOCK</span>
+        <span class="brand-name">LENS</span>
+      </div>
     </div>
+
+    <nav class="nav">
+      @for (item of navItems; track item.tab) {
+        <button [class.active]="tab() === item.tab" (click)="select(item.tab)" [attr.aria-current]="tab() === item.tab ? 'page' : null">
+          <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <div class="nav nav-foot">
+      <div class="conn" [class.on]="realtime.connected()">
+        <span class="dot"></span>
+        <span class="nav-label">{{ realtime.connected() ? 'Live' : 'Offline' }}</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs">
+        <span class="muted">Dealership</span>
+        <span class="sep">/</span>
+        <strong>{{ pageTitle() }}</strong>
+      </div>
+      <div class="topbar-right">
+        <span class="muted today">{{ today }}</span>
+        <span class="avatar" aria-hidden="true">AH</span>
+      </div>
+    </header>
+
+    <main class="content">
+      @switch (tab()) {
+        @case ('dashboard') { <app-dashboard /> }
+        @case ('inventory') { <app-inventory /> }
+        @case ('strategies') { <app-strategies /> }
+      }
+    </main>
   </div>
-
-  <nav class="tabs">
-    <button [class.active]="tab() === 'dashboard'" (click)="select('dashboard')">Dashboard</button>
-    <button [class.active]="tab() === 'inventory'" (click)="select('inventory')">Inventory</button>
-    <button [class.active]="tab() === 'strategies'" (click)="select('strategies')">Strategies</button>
-  </nav>
-
-  <div class="conn" [class.on]="realtime.connected()">
-    <span class="dot"></span>
-    {{ realtime.connected() ? 'Live' : 'Offline' }}
-  </div>
-</header>
-
-<main class="content">
-  @switch (tab()) {
-    @case ('dashboard') { <app-dashboard /> }
-    @case ('inventory') { <app-inventory /> }
-    @case ('strategies') { <app-strategies /> }
-  }
-</main>
+</div>

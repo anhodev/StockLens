@@ -2,7 +2,7 @@
 
 .drawer-backdrop {
   position: fixed; inset: 0;
-  background: rgba(2, 6, 23, 0.6);
+  background: rgba(16, 17, 26, 0.28);
   z-index: 40;
 }
 .drawer {
@@ -10,39 +10,70 @@
   width: min(520px, 100vw);
   z-index: 50;
   border-radius: 0;
+  border-right: none; border-top: none; border-bottom: none;
+  box-shadow: var(--shadow-pop);
   display: flex; flex-direction: column;
-  animation: slide-in 0.2s ease;
+  animation: slide-in 0.18s ease;
 }
-@keyframes slide-in { from { transform: translateX(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes slide-in { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 .drawer-head {
   display: flex; justify-content: space-between; align-items: flex-start;
-  padding: 18px; border-bottom: 1px solid var(--border);
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
 }
-.drawer-head h2 { font-size: 18px; }
-.drawer-body { overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 22px; }
+.drawer-head h2 { font-size: 16px; }
+.drawer-head .muted { font-size: 11.5px; }
+.drawer-body { overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 20px; }
 
 .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.facts > div { display: flex; flex-direction: column; gap: 2px; }
-.facts .muted { font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+/* align-items keeps badges hugging their text instead of stretching the column */
+.facts > div { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.facts .muted {
+  font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.07em; font-weight: 600;
+}
 .aging-text { color: var(--aging); }
 
-section h3 { font-size: 14px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-dim); }
+section h3 {
+  font-size: 10px; margin-bottom: 10px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  font-weight: 600; color: var(--text-dim);
+}
 
-.strategy-card { background: var(--surface-2); border-radius: 8px; padding: 12px; }
-.strategy-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.strategy-metrics { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; }
+.strategy-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.strategy-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+.strategy-card p { margin: 0; font-size: 12px; }
+.strategy-metrics { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; }
 
-.new-action { background: var(--surface-2); border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+.new-action {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px; margin-bottom: 14px;
+}
 .new-action .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
 .new-action select, .new-action textarea { width: 100%; }
-.new-action textarea { margin-bottom: 8px; }
+.new-action textarea { margin-bottom: 8px; resize: vertical; }
 .new-action-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
-.action-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.action-list li { border-left: 3px solid var(--border); padding: 8px 12px; background: var(--surface-2); border-radius: 6px; }
+.action-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.action-list li {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  padding: 9px 12px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+}
 .action-top { display: flex; justify-content: space-between; align-items: center; }
-.action-list p { margin: 6px 0; }
-.action-meta { font-size: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.action-list p { margin: 5px 0; font-size: 12px; }
+.action-meta {
+  font-size: 11px; display: flex; justify-content: space-between;
+  align-items: center; gap: 8px; flex-wrap: wrap;
+}
 .action-controls { display: flex; gap: 6px; }
 button.sm { padding: 3px 8px; font-size: 11px; }
