@@ -31,15 +31,49 @@ public static class VehicleEndpoints
         group.MapGet("/{id:guid}/effective-strategy", GetEffectiveStrategy);
         group.MapPost("/", CreateVehicle).WithValidation<CreateVehicleRequest>();
         group.MapPut("/{id:guid}", UpdateVehicle).WithValidation<UpdateVehicleRequest>();
+        group.MapPost("/{id:guid}/status", ChangeStatus).WithValidation<ChangeVehicleStatusRequest>();
+        group.MapGet("/{id:guid}/status-history", GetStatusHistory);
 
         return app;
+    }
+
+    /// <summary>Moves a vehicle to a new status, recording the evidence the move required.</summary>
+    private static async Task<IResult> ChangeStatus(
+        Guid id, ChangeVehicleStatusRequest req, VehicleStatusService service,
+        IInventoryNotifier notifier, DashboardService dashboard, CancellationToken ct)
+    {
+        var result = await service.ChangeStatusAsync(id, req, ct);
+
+        switch (result.Outcome)
+        {
+            case StatusChangeOutcome.VehicleNotFound:
+                return Results.NotFound();
+            case StatusChangeOutcome.SalespersonNotFound:
+            case StatusChangeOutcome.AlreadyInStatus:
+                return Results.Problem(result.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        // Status drives aging, stock counts and (when sold) the sales trend.
+        await notifier.VehicleChangedAsync(result.Vehicle!, ct);
+        await notifier.DashboardChangedAsync(await dashboard.GetSummaryAsync(ct), ct);
+
+        return Results.Ok(result.Vehicle);
+    }
+
+    private static async Task<IResult> GetStatusHistory(
+        Guid id, IApplicationDbContext db, VehicleStatusService service, CancellationToken ct)
+    {
+        if (!await db.Vehicles.AnyAsync(v => v.Id == id, ct))
+            return Results.NotFound();
+
+        return Results.Ok(await service.GetHistoryAsync(id, ct));
     }
 
     private static async Task<IResult> GetVehicles(
         IApplicationDbContext db, [AsParameters] VehicleFilter filter, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var query = db.Vehicles.AsNoTracking().Include(v => v.Actions).AsQueryable();
+        var query = db.Vehicles.AsNoTracking().Include(v => v.Actions).Include(v => v.Salesperson).AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filter.Make))
             query = query.Where(v => v.Make == filter.Make);
@@ -105,6 +139,7 @@ public static class VehicleEndpoints
         var items = await db.Vehicles
             .AsNoTracking()
             .Include(v => v.Actions)
+            .Include(v => v.Salesperson)
             .Where(v => v.Status != VehicleStatus.Sold && v.AcquiredDate < cutoff)
             .OrderBy(v => v.AcquiredDate)
             .ToListAsync(ct);
@@ -115,7 +150,8 @@ public static class VehicleEndpoints
     private static async Task<IResult> GetVehicle(Guid id, IApplicationDbContext db, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var v = await db.Vehicles.AsNoTracking().Include(x => x.Actions).FirstOrDefaultAsync(x => x.Id == id, ct);
+        var v = await db.Vehicles.AsNoTracking().Include(x => x.Actions).Include(x => x.Salesperson)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
         return v is null ? Results.NotFound() : Results.Ok(v.ToDto(today));
     }
 
@@ -186,7 +222,8 @@ public static class VehicleEndpoints
     {
         var logger = loggerFactory.CreateLogger(LogCategory);
 
-        var v = await db.Vehicles.Include(x => x.Actions).FirstOrDefaultAsync(x => x.Id == id, ct);
+        var v = await db.Vehicles.Include(x => x.Actions).Include(x => x.Salesperson)
+            .FirstOrDefaultAsync(x => x.Id == id, ct);
         if (v is null) return Results.NotFound();
 
         v.Make = req.Make;

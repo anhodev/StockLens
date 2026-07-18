@@ -13,6 +13,8 @@ public interface IApplicationDbContext
     DbSet<VehicleAction> VehicleActions { get; }
     DbSet<BusinessStrategy> Strategies { get; }
     DbSet<SalesRecord> Sales { get; }
+    DbSet<Salesperson> Salespeople { get; }
+    DbSet<VehicleStatusChange> VehicleStatusChanges { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

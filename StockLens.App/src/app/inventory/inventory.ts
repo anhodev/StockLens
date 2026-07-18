@@ -34,7 +34,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
   readonly selected = signal<Vehicle | null>(null);
   readonly agingCount = signal(0);
 
-  readonly statuses: VehicleStatus[] = ['InStock', 'Reserved', 'Sold'];
+  readonly statuses: VehicleStatus[] = ['Open', 'Deposited', 'Hold', 'Sold'];
   readonly makes = signal<string[]>([]);
   readonly view = signal<ViewMode>('grid');
 
@@ -179,25 +179,24 @@ export class InventoryComponent implements OnInit, OnDestroy {
     this.view.set(mode);
   }
 
-  onDetailChanged(): void {
+  /** The drawer changed the vehicle (e.g. a status move): refresh both it and the list. */
+  onDetailChanged(updated: Vehicle): void {
+    this.selected.set(updated);
     this.load();
+    this.loadAgingCount();
   }
 
   statusBadge(status: VehicleStatus): string {
     switch (status) {
-      case 'InStock': return 'badge-instock';
-      case 'Reserved': return 'badge-reserved';
+      case 'Open': return 'badge-instock';
+      case 'Deposited': return 'badge-open';
+      case 'Hold': return 'badge-reserved';
       default: return 'badge-sold';
     }
   }
 
   statusLabel(status: VehicleStatus | ''): string {
-    switch (status) {
-      case 'InStock': return 'In stock';
-      case 'Reserved': return 'Reserved';
-      case 'Sold': return 'Sold';
-      default: return 'Any';
-    }
+    return status === '' ? 'Any' : status;
   }
 
   /** Label for the active sort when descending (the API treats age-desc as oldest-first). */

@@ -12,7 +12,6 @@ public class SalesRecordConfiguration : IEntityTypeConfiguration<SalesRecord>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.SalePrice).HasColumnType("numeric(12,2)");
-        builder.Property(x => x.SoldBy).HasMaxLength(128).IsRequired();
 
         builder.HasOne(x => x.Vehicle)
             .WithMany()
@@ -20,5 +19,6 @@ public class SalesRecordConfiguration : IEntityTypeConfiguration<SalesRecord>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasIndex(x => x.SoldDate);
+        builder.HasIndex(x => x.SalespersonId);
     }
 }

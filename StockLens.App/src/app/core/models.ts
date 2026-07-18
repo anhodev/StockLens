@@ -1,6 +1,6 @@
 // TypeScript mirrors of the API DTOs.
 
-export type VehicleStatus = 'InStock' | 'Reserved' | 'Sold';
+export type VehicleStatus = 'Open' | 'Deposited' | 'Hold' | 'Sold';
 
 export type BodyType = 'Sedan' | 'Suv' | 'Truck' | 'Hatchback' | 'Coupe' | 'Van' | 'Wagon';
 
@@ -22,6 +22,8 @@ export interface Vehicle {
   color?: string | null;
   mileage: number;
   bodyType: BodyType;
+  depositAmount?: number | null;
+  salespersonName?: string | null;
   listPrice: number;
   cost: number;
   status: VehicleStatus;
@@ -71,12 +73,32 @@ export interface TopSale {
   salePrice: number;
   soldDate: string;
   daysToSell: number;
+  soldBy: string;
 }
 
 export interface MakeBreakdown {
   make: string;
   count: number;
   stockValue: number;
+}
+
+/** One month of sales performance, oldest first. */
+export interface SalesTrendPoint {
+  month: string;
+  label: string;
+  units: number;
+  revenue: number;
+}
+
+export interface Salesperson {
+  id: string;
+  fullName: string;
+  email?: string | null;
+  team?: string | null;
+  hireDate: string;
+  isActive: boolean;
+  salesCount: number;
+  revenue: number;
 }
 
 export interface DashboardSummary {
@@ -89,6 +111,7 @@ export interface DashboardSummary {
   revenueLast30Days: number;
   topSales: TopSale[];
   stockByMake: MakeBreakdown[];
+  salesTrend: SalesTrendPoint[];
 }
 
 export interface PagedResult<T> {
@@ -109,6 +132,34 @@ export interface VehicleFilter {
   page?: number;
   pageSize?: number;
 }
+
+/** An audited move between vehicle statuses, newest first. */
+export interface VehicleStatusChange {
+  id: string;
+  vehicleId: string;
+  fromStatus: VehicleStatus;
+  toStatus: VehicleStatus;
+  reason?: string | null;
+  depositAmount?: number | null;
+  salePrice?: number | null;
+  salespersonName?: string | null;
+  effectiveDate: string;
+  changedBy: string;
+  createdAt: string;
+}
+
+/** Payload for a status move; which fields are required depends on `toStatus`. */
+export interface ChangeStatusRequest {
+  toStatus: VehicleStatus;
+  reason?: string | null;
+  depositAmount?: number | null;
+  salePrice?: number | null;
+  soldDate?: string | null;
+  salespersonId?: string | null;
+  changedBy?: string | null;
+}
+
+export const VEHICLE_STATUSES: VehicleStatus[] = ['Open', 'Deposited', 'Hold', 'Sold'];
 
 export const ACTION_TYPES: ActionType[] = [
   'PriceReductionPlanned', 'MoveToAuction', 'Promote', 'TransferToBranch', 'Recondition', 'Other',

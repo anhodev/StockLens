@@ -9,7 +9,7 @@ public class VehicleAgingTests
 
     private static Vehicle InStock(int ageDays) => new()
     {
-        Status = VehicleStatus.InStock,
+        Status = VehicleStatus.Open,
         AcquiredDate = Today.AddDays(-ageDays),
     };
 
@@ -56,9 +56,9 @@ public class VehicleAgingTests
     }
 
     [Fact]
-    public void Reserved_vehicle_can_be_aging()
+    public void Held_vehicle_can_be_aging()
     {
-        var v = new Vehicle { Status = VehicleStatus.Reserved, AcquiredDate = Today.AddDays(-120) };
+        var v = new Vehicle { Status = VehicleStatus.Hold, AcquiredDate = Today.AddDays(-120) };
         Assert.True(v.IsAgingStock(Today));
     }
 }

@@ -15,6 +15,8 @@ public record VehicleDto(
     decimal ListPrice,
     decimal Cost,
     VehicleStatus Status,
+    decimal? DepositAmount,
+    string? SalespersonName,
     DateOnly AcquiredDate,
     DateOnly? SoldDate,
     int DaysInInventory,

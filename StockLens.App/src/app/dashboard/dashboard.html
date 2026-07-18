@@ -14,6 +14,14 @@
     }
   </div>
 
+  <div class="card panel perf-panel">
+    <div class="panel-head">
+      <h3>Sales performance</h3>
+      <span class="muted">units sold &amp; revenue, last 6 months</span>
+    </div>
+    <app-sales-chart [points]="s.salesTrend" />
+  </div>
+
   <div class="two-col">
     <div class="card panel">
       <div class="panel-head">
@@ -22,18 +30,22 @@
       </div>
       <table>
         <thead>
-          <tr><th>Vehicle</th><th class="right">Sale price</th><th class="right">Days to sell</th><th class="right">Sold</th></tr>
+          <tr>
+            <th>Vehicle</th><th>Sold by</th>
+            <th class="right">Sale price</th><th class="right">Days</th><th class="right">Sold</th>
+          </tr>
         </thead>
         <tbody>
           @for (t of s.topSales; track t.vehicleId) {
             <tr>
               <td>{{ t.year }} {{ t.make }} {{ t.model }}</td>
+              <td class="nowrap">{{ t.soldBy }}</td>
               <td class="right nowrap">{{ t.salePrice | currency:'USD':'symbol':'1.0-0' }}</td>
               <td class="right">{{ t.daysToSell }}</td>
               <td class="right nowrap muted">{{ t.soldDate | date:'MMM d' }}</td>
             </tr>
           } @empty {
-            <tr><td colspan="4" class="muted">No sales yet.</td></tr>
+            <tr><td colspan="5" class="muted">No sales yet.</td></tr>
           }
         </tbody>
       </table>

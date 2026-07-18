@@ -43,6 +43,9 @@ libpeerconnection.log
 !**/.vscode/launch.json
 !**/.vscode/extensions.json
 
+# ---- Agent skills (local design/tooling skills, not app source) ----
+/StockLens.App/.agents/
+
 # ---- System files ----
 .DS_Store
 Thumbs.db

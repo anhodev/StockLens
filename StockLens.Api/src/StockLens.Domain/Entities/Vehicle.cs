@@ -24,7 +24,14 @@ public class Vehicle
     /// <summary>Acquisition cost to the dealership; used for margin/insight.</summary>
     public decimal Cost { get; set; }
 
-    public VehicleStatus Status { get; set; } = VehicleStatus.InStock;
+    public VehicleStatus Status { get; set; } = VehicleStatus.Open;
+
+    /// <summary>Deposit currently held against the vehicle; set while <see cref="Status"/> is Deposited.</summary>
+    public decimal? DepositAmount { get; set; }
+
+    /// <summary>Salesperson currently working the deal, once one is committed to it.</summary>
+    public Guid? SalespersonId { get; set; }
+    public Salesperson? Salesperson { get; set; }
 
     /// <summary>Date the vehicle entered inventory.</summary>
     public DateOnly AcquiredDate { get; set; }
@@ -36,6 +43,7 @@ public class Vehicle
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     public ICollection<VehicleAction> Actions { get; set; } = new List<VehicleAction>();
+    public ICollection<VehicleStatusChange> StatusChanges { get; set; } = new List<VehicleStatusChange>();
 
     /// <summary>
     /// Number of days the vehicle has been (or was) in inventory, relative to the supplied date.

@@ -13,7 +13,7 @@ public record CreateVehicleRequest(
     decimal ListPrice,
     decimal Cost,
     DateOnly AcquiredDate,
-    VehicleStatus Status = VehicleStatus.InStock,
+    VehicleStatus Status = VehicleStatus.Open,
     BodyType BodyType = BodyType.Sedan);
 
 public record UpdateVehicleRequest(

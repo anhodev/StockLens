@@ -10,7 +10,8 @@ namespace StockLens.Api.Tests;
 /// Integration tests that boot the real API (and thus the real EF pipeline) against an
 /// isolated test database. They require the Postgres container from docker-compose to be up.
 /// </summary>
-public class InventoryApiTests : IClassFixture<StockLensApiFactory>
+[Collection(ApiCollection.Name)]
+public class InventoryApiTests
 {
     private readonly StockLensApiFactory _factory;
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
@@ -31,6 +32,53 @@ public class InventoryApiTests : IClassFixture<StockLensApiFactory>
         Assert.True(summary!.TotalInStock > 0);
         Assert.NotEmpty(summary.TopSales);
         Assert.NotEmpty(summary.StockByMake);
+    }
+
+    [Fact]
+    public async Task Dashboard_sales_trend_covers_a_continuous_month_window()
+    {
+        var client = _factory.CreateClient();
+
+        var summary = await client.GetFromJsonAsync<DashboardSummaryDto>("/api/dashboard/summary", Json);
+
+        var trend = summary!.SalesTrend;
+        Assert.NotEmpty(trend);
+        // Oldest first, one point per calendar month, no gaps — the chart depends on it.
+        Assert.Equal(trend.OrderBy(p => p.Month).Select(p => p.Month), trend.Select(p => p.Month));
+        for (var i = 1; i < trend.Count; i++)
+            Assert.Equal(trend[i - 1].Month.AddMonths(1), trend[i].Month);
+
+        Assert.All(trend, p => Assert.True(p.Units >= 0 && p.Revenue >= 0));
+        Assert.Contains(trend, p => p.Units > 0); // seeded history must produce real sales
+    }
+
+    [Fact]
+    public async Task Top_sales_are_attributed_to_a_salesperson()
+    {
+        var client = _factory.CreateClient();
+
+        var summary = await client.GetFromJsonAsync<DashboardSummaryDto>("/api/dashboard/summary", Json);
+
+        Assert.NotEmpty(summary!.TopSales);
+        Assert.All(summary.TopSales, s => Assert.False(string.IsNullOrWhiteSpace(s.SoldBy)));
+        // Highest value first.
+        Assert.Equal(summary.TopSales.OrderByDescending(s => s.SalePrice).Select(s => s.SalePrice),
+                     summary.TopSales.Select(s => s.SalePrice));
+    }
+
+    [Fact]
+    public async Task Salespeople_endpoint_returns_seeded_team_with_totals()
+    {
+        var client = _factory.CreateClient();
+
+        var team = await client.GetFromJsonAsync<List<SalespersonDto>>("/api/salespeople?activeOnly=true", Json);
+
+        Assert.NotNull(team);
+        Assert.NotEmpty(team!);
+        Assert.All(team, p => Assert.True(p.IsActive));
+        Assert.All(team, p => Assert.False(string.IsNullOrWhiteSpace(p.FullName)));
+        // Seeded sales are distributed across the team, so someone must have sold something.
+        Assert.Contains(team, p => p.SalesCount > 0 && p.Revenue > 0);
     }
 
     [Fact]

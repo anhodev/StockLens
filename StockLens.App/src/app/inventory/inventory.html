@@ -159,5 +159,5 @@
 </div>
 
 @if (selected(); as v) {
-  <app-vehicle-detail [vehicle]="v" (closed)="selected.set(null)" (changed)="onDetailChanged()" />
+  <app-vehicle-detail [vehicle]="v" (closed)="selected.set(null)" (changed)="onDetailChanged($event)" />
 }

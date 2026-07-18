@@ -64,6 +64,7 @@ app.MapVehicleEndpoints();
 app.MapActionEndpoints();
 app.MapStrategyEndpoints();
 app.MapDashboardEndpoints();
+app.MapSalespersonEndpoints();
 app.MapHub<InventoryHub>("/hubs/inventory");
 
 app.MapGet("/", () => Results.Redirect("/swagger"));

@@ -1,5 +1,6 @@
 using FluentValidation;
 using StockLens.Application.Dtos;
+using StockLens.Domain.Enums;
 
 namespace StockLens.Application.Validation;
 
@@ -27,6 +28,51 @@ public class UpdateVehicleRequestValidator : AbstractValidator<UpdateVehicleRequ
         RuleFor(x => x.Mileage).GreaterThanOrEqualTo(0);
         RuleFor(x => x.ListPrice).GreaterThanOrEqualTo(0);
         RuleFor(x => x.Cost).GreaterThanOrEqualTo(0);
+    }
+}
+
+/// <summary>
+/// Enforces the evidence each status transition requires: a deposit and a salesperson to
+/// take a deposit, a reason to hold or release, and a price/date/salesperson to sell.
+/// </summary>
+public class ChangeVehicleStatusRequestValidator : AbstractValidator<ChangeVehicleStatusRequest>
+{
+    public ChangeVehicleStatusRequestValidator()
+    {
+        RuleFor(x => x.ToStatus).IsInEnum();
+        RuleFor(x => x.Reason).MaximumLength(500);
+
+        When(x => x.ToStatus == VehicleStatus.Deposited, () =>
+        {
+            RuleFor(x => x.DepositAmount)
+                .NotNull().WithMessage("A deposit amount is required when taking a deposit.")
+                .GreaterThan(0).WithMessage("The deposit must be greater than zero.");
+            RuleFor(x => x.SalespersonId)
+                .NotNull().WithMessage("A salesperson is required when taking a deposit.");
+        });
+
+        When(x => x.ToStatus == VehicleStatus.Hold, () =>
+        {
+            RuleFor(x => x.Reason)
+                .NotEmpty().WithMessage("A reason is required when placing a vehicle on hold.");
+        });
+
+        When(x => x.ToStatus == VehicleStatus.Sold, () =>
+        {
+            RuleFor(x => x.SoldDate)
+                .NotNull().WithMessage("A sale date is required when marking a vehicle sold.");
+            RuleFor(x => x.SalespersonId)
+                .NotNull().WithMessage("A salesperson is required when marking a vehicle sold.");
+            RuleFor(x => x.SalePrice)
+                .NotNull().WithMessage("A sale price is required when marking a vehicle sold.")
+                .GreaterThan(0).WithMessage("The sale price must be greater than zero.");
+        });
+
+        When(x => x.ToStatus == VehicleStatus.Open, () =>
+        {
+            RuleFor(x => x.Reason)
+                .NotEmpty().WithMessage("A reason is required when returning a vehicle to open.");
+        });
     }
 }
 

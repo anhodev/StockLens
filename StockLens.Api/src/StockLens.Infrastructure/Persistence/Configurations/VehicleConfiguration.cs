@@ -21,6 +21,7 @@ public class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
 
         builder.Property(x => x.ListPrice).HasColumnType("numeric(12,2)");
         builder.Property(x => x.Cost).HasColumnType("numeric(12,2)");
+        builder.Property(x => x.DepositAmount).HasColumnType("numeric(12,2)");
 
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
         builder.Property(x => x.BodyType).HasConversion<string>().HasMaxLength(16);
@@ -34,5 +35,15 @@ public class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
             .WithOne(a => a.Vehicle!)
             .HasForeignKey(a => a.VehicleId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(x => x.StatusChanges)
+            .WithOne(c => c.Vehicle!)
+            .HasForeignKey(c => c.VehicleId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(x => x.Salesperson)
+            .WithMany()
+            .HasForeignKey(x => x.SalespersonId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

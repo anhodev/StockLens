@@ -3,8 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE } from './config';
 import {
-  BusinessStrategy, DashboardSummary, EffectiveStrategy, PagedResult,
-  Vehicle, VehicleAction, VehicleFilter,
+  BusinessStrategy, ChangeStatusRequest, DashboardSummary, EffectiveStrategy, PagedResult,
+  Salesperson, Vehicle, VehicleAction, VehicleFilter, VehicleStatusChange,
 } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -14,6 +14,12 @@ export class ApiService {
 
   getDashboard(): Observable<DashboardSummary> {
     return this.http.get<DashboardSummary>(`${this.base}/api/dashboard/summary`);
+  }
+
+  getSalespeople(activeOnly = true): Observable<Salesperson[]> {
+    return this.http.get<Salesperson[]>(`${this.base}/api/salespeople`, {
+      params: { activeOnly },
+    });
   }
 
   getVehicles(filter: VehicleFilter): Observable<PagedResult<Vehicle>> {
@@ -40,6 +46,14 @@ export class ApiService {
 
   updateVehicle(id: string, body: Partial<Vehicle>): Observable<Vehicle> {
     return this.http.put<Vehicle>(`${this.base}/api/vehicles/${id}`, body);
+  }
+
+  changeStatus(vehicleId: string, body: ChangeStatusRequest): Observable<Vehicle> {
+    return this.http.post<Vehicle>(`${this.base}/api/vehicles/${vehicleId}/status`, body);
+  }
+
+  getStatusHistory(vehicleId: string): Observable<VehicleStatusChange[]> {
+    return this.http.get<VehicleStatusChange[]>(`${this.base}/api/vehicles/${vehicleId}/status-history`);
   }
 
   getActions(vehicleId: string): Observable<VehicleAction[]> {

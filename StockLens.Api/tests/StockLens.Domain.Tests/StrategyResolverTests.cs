@@ -14,7 +14,7 @@ public class StrategyResolverTests
         Id = Guid.NewGuid(),
         Make = "Ford",
         Model = "F-150",
-        Status = VehicleStatus.InStock,
+        Status = VehicleStatus.Open,
         AcquiredDate = Today.AddDays(-100),
     };
 

@@ -12,6 +12,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IStrategyResolver, StrategyResolver>();
         services.AddScoped<DashboardService>();
+        services.AddScoped<VehicleStatusService>();
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         return services;
     }

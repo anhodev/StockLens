@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject
 import { ApiService } from '../core/api.service';
 import { RealtimeService } from '../core/realtime.service';
 import { DashboardSummary } from '../core/models';
+import { SalesChartComponent } from './sales-chart';
 
 /** A single headline metric rendered as a KPI card. */
 interface Kpi {
@@ -24,7 +25,7 @@ const decimal = (n: number) =>
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CurrencyPipe, DecimalPipe, DatePipe, NgClass],
+  imports: [CurrencyPipe, DecimalPipe, DatePipe, NgClass, SalesChartComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

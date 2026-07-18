@@ -16,7 +16,7 @@
 .scope-block th:first-child, .scope-block td:first-child { padding-left: 16px; }
 .scope-block th:last-child, .scope-block td:last-child { padding-right: 16px; }
 .scope-block td .muted { font-size: 11.5px; }
-.mono { font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 11.5px; }
+.mono { font-family: var(--font-mono); font-size: 11.5px; }
 button.sm { padding: 4px 9px; font-size: 11px; margin-left: 6px; }
 
 .drawer-backdrop {

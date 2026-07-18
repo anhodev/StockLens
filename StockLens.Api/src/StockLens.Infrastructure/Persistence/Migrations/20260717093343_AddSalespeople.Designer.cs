@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StockLens.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using StockLens.Infrastructure.Persistence;
 namespace StockLens.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260717093343_AddSalespeople")]
+    partial class AddSalespeople
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -171,9 +174,6 @@ namespace StockLens.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<decimal?>("DepositAmount")
-                        .HasColumnType("numeric(12,2)");
-
                     b.Property<decimal>("ListPrice")
                         .HasColumnType("numeric(12,2)");
 
@@ -189,9 +189,6 @@ namespace StockLens.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
-
-                    b.Property<Guid?>("SalespersonId")
-                        .HasColumnType("uuid");
 
                     b.Property<DateOnly?>("SoldDate")
                         .HasColumnType("date");
@@ -223,8 +220,6 @@ namespace StockLens.Infrastructure.Persistence.Migrations
                     b.HasIndex("BodyType");
 
                     b.HasIndex("Make");
-
-                    b.HasIndex("SalespersonId");
 
                     b.HasIndex("Status");
 
@@ -275,60 +270,6 @@ namespace StockLens.Infrastructure.Persistence.Migrations
                     b.ToTable("vehicle_actions", (string)null);
                 });
 
-            modelBuilder.Entity("StockLens.Domain.Entities.VehicleStatusChange", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ChangedBy")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal?>("DepositAmount")
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<DateOnly>("EffectiveDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("FromStatus")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<decimal?>("SalePrice")
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<Guid?>("SalespersonId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("ToStatus")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)");
-
-                    b.Property<Guid>("VehicleId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("SalespersonId");
-
-                    b.HasIndex("VehicleId");
-
-                    b.ToTable("vehicle_status_changes", (string)null);
-                });
-
             modelBuilder.Entity("StockLens.Domain.Entities.SalesRecord", b =>
                 {
                     b.HasOne("StockLens.Domain.Entities.Salesperson", "Salesperson")
@@ -348,16 +289,6 @@ namespace StockLens.Infrastructure.Persistence.Migrations
                     b.Navigation("Vehicle");
                 });
 
-            modelBuilder.Entity("StockLens.Domain.Entities.Vehicle", b =>
-                {
-                    b.HasOne("StockLens.Domain.Entities.Salesperson", "Salesperson")
-                        .WithMany()
-                        .HasForeignKey("SalespersonId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Salesperson");
-                });
-
             modelBuilder.Entity("StockLens.Domain.Entities.VehicleAction", b =>
                 {
                     b.HasOne("StockLens.Domain.Entities.Vehicle", "Vehicle")
@@ -365,24 +296,6 @@ namespace StockLens.Infrastructure.Persistence.Migrations
                         .HasForeignKey("VehicleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Vehicle");
-                });
-
-            modelBuilder.Entity("StockLens.Domain.Entities.VehicleStatusChange", b =>
-                {
-                    b.HasOne("StockLens.Domain.Entities.Salesperson", "Salesperson")
-                        .WithMany()
-                        .HasForeignKey("SalespersonId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("StockLens.Domain.Entities.Vehicle", "Vehicle")
-                        .WithMany("StatusChanges")
-                        .HasForeignKey("VehicleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Salesperson");
 
                     b.Navigation("Vehicle");
                 });
@@ -395,8 +308,6 @@ namespace StockLens.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("StockLens.Domain.Entities.Vehicle", b =>
                 {
                     b.Navigation("Actions");
-
-                    b.Navigation("StatusChanges");
                 });
 #pragma warning restore 612, 618
         }

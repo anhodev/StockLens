@@ -12,6 +12,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<VehicleAction> VehicleActions => Set<VehicleAction>();
     public DbSet<BusinessStrategy> Strategies => Set<BusinessStrategy>();
     public DbSet<SalesRecord> Sales => Set<SalesRecord>();
+    public DbSet<Salesperson> Salespeople => Set<Salesperson>();
+    public DbSet<VehicleStatusChange> VehicleStatusChanges => Set<VehicleStatusChange>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
