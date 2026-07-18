@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using StockLens.Api.Endpoints;
+using StockLens.Api.Middleware;
 using StockLens.Api.Realtime;
 using StockLens.Application;
 using StockLens.Application.Abstractions;
@@ -56,7 +57,7 @@ using (var scope = app.Services.CreateScope())
     await DatabaseSeeder.SeedAsync(db);
 }
 
-app.UseSerilogRequestLogging();
+app.UseRequestLogging();
 
 app.UseCors(CorsPolicy);
 
