@@ -94,7 +94,8 @@ docker compose up -d          # PostgreSQL on host port 5433 (mapped to avoid a 
 
 ```bash
 cd StockLens.Api/src/StockLens.Api
-dotnet run
+dotnet build                  # compile only
+dotnet run                    # build and run
 ```
 
 Listens on `http://localhost:5080` (Swagger UI at `/swagger`; `/` redirects there). On startup
@@ -111,7 +112,8 @@ aging vehicles; salespeople; sales history; strategies at every scope).
 ```bash
 cd StockLens.App
 npm install
-npm start                     # http://localhost:4200
+npm run build                 # production build to dist/
+npm start                     # dev server at http://localhost:4200
 ```
 
 If the API is not on `http://localhost:5080`, update `API_BASE` in
@@ -119,14 +121,27 @@ If the API is not on `http://localhost:5080`, update `API_BASE` in
 
 ## Tests
 
+The suite validates the core business logic of the dashboard: inventory aging, strategy-driven
+pricing, and the vehicle lifecycle workflow.
+
 ```bash
 cd StockLens.Api
 dotnet test                   # domain unit tests + API integration tests (needs the DB up)
 ```
 
-- **Domain unit tests**: aging rules and strategy resolution.
-- **API integration tests**: inventory endpoints and the vehicle status workflow, run against
-  a real API host via `WebApplicationFactory`.
+- **Domain unit tests** (`StockLens.Domain.Tests`): the aging-stock threshold and
+  days-in-inventory math (including sold and held vehicles), and strategy-resolution precedence
+  (Vehicle over VehicleType over Factory, ignoring inactive or expired strategies, newest wins at
+  the same scope).
+- **API integration tests** (`StockLens.Api.Tests`), run against a real host via
+  `WebApplicationFactory`:
+  - **Inventory**: dashboard KPIs and the sales trend, salesperson attribution on top sales, the
+    effective-strategy discount applied to list price, the aging endpoint, action logging,
+    multi-term search across fields, and request validation.
+  - **Vehicle lifecycle**: each status transition and the evidence it requires (deposit amount and
+    salesperson, hold reason, sale date/salesperson/price), selling creating a sale that reaches
+    the dashboard, un-selling reversing it so revenue is not left inflated, the status-history
+    audit trail, and rejected moves (same status, unknown salesperson, unknown vehicle).
 
 ## Key endpoints
 
@@ -145,4 +160,52 @@ dotnet test                   # domain unit tests + API integration tests (needs
 | GET | `/api/strategies/scope-options` | Available makes, vehicle types, and vehicles for scoping |
 | GET | `/api/salespeople` | Sales team with lifetime unit count and revenue (`activeOnly` filter) |
 | GET | `/api/dashboard/summary` | KPIs, top sales, stock-by-make, monthly sales trend |
+| GET | `/health` | Full health report (JSON) with a per-check breakdown |
+| GET | `/health/ready` | Readiness probe: database reachability (checks tagged `ready`) |
+| GET | `/health/live` | Liveness probe: process is up (no dependency checks) |
 | Hub | `/hubs/inventory` | SignalR: `VehicleChanged`, `ActionChanged`, `StrategyChanged`, `DashboardChanged` |
+
+## AI Collaboration Narrative
+
+StockLens was built with generative AI (Claude, via Claude Code) as a pair programmer, with a
+human owning the architecture and holding the final say on every change.
+
+### Guiding the AI
+
+- **Standards as durable context.** The engineering standards live in a project `CLAUDE.md` and a
+  set of skills (project-standards, dotnet-clean-api, angular-enterprise, feature-generator,
+  inventory-domain-expert, code-reviewer). The AI reads these on every task, so generated code
+  starts inside the guardrails (Clean Architecture, minimal APIs, typed results, FluentValidation,
+  Angular signals with OnPush) instead of being corrected into them afterward.
+- **Feature-sized prompts.** Work was requested one vertical slice at a time (for example the
+  vehicle status workflow, or strategy-driven pricing), with the domain rules stated up front
+  (aging at 90 days, strategy precedence Vehicle over VehicleType over Factory). Small units kept
+  each change reviewable.
+- **Explicit decisions when the defaults did not fit.** Where the AI's assumptions clashed with the
+  project's intent, the human decided and the decision was recorded: PostgreSQL was kept over SQL
+  Server, a custom SCSS UI over Angular Material, and Serilog-only logging was chosen for now. The
+  AI accelerated the work; it did not make the architectural calls.
+
+### Verifying and refining the output
+
+- **Build and run, not just read.** Every change was compiled and the app was run end to end, with
+  the live dashboard and SignalR updates exercised in the browser before a feature was considered
+  done.
+- **Tests as the safety net.** Core business logic is covered by domain unit tests and
+  `WebApplicationFactory` integration tests (see [Tests](#tests)). New behavior was accompanied by
+  tests, and the suite was kept green as a gate on each change.
+- **Review passes.** Generated code was reviewed against the standards, both by hand and with the
+  code-reviewer skill, which drove uniform fixes such as OnPush across components and `AsNoTracking`
+  across read-only queries.
+
+### Ensuring final quality
+
+- **Correctness:** derived values (aging, discount, net price) are computed on read, so there is no
+  denormalized state to drift, and the tests pin the rules that matter.
+- **Security and validation:** all client input is validated, EF Core parameterizes queries, search
+  wildcards are escaped, CORS is restricted to the app origin, and no secrets or sensitive data are
+  logged.
+- **Consistency and readability:** naming, structure, and prose were held to the house conventions,
+  favoring readable code over clever code.
+- **Human judgment last.** The AI produced drafts and options at speed; a human verified behavior,
+  checked the tests, and approved every change before it landed.
