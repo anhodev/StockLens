@@ -144,7 +144,7 @@ public static class DatabaseSeeder
             new()
             {
                 Scope = StrategyScope.VehicleType, ScopeKey = BusinessStrategy.VehicleTypeKey("Nissan", "Rogue"),
-                Name = "Rogue clearance", Description = "Aging SUV — clear aggressively.",
+                Name = "Rogue clearance", Description = "Aging SUV, clear aggressively.",
                 TargetDaysToSell = 45, DiscountPercent = 8, EffectiveFrom = today.AddDays(-30),
             },
         };
@@ -201,7 +201,7 @@ public static class DatabaseSeeder
 
         // Walk each month oldest → newest with a gentle upward trend, so the chart reads
         // as a dealership improving rather than as noise. Months are anchored to the first
-        // of the calendar month — matching how the dashboard buckets the trend — because
+        // of the calendar month (matching how the dashboard buckets the trend) because
         // today-relative offsets would straddle month boundaries and under-fill the window.
         var currentMonth = new DateOnly(today.Year, today.Month, 1);
 

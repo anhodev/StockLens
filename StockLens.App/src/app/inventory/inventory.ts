@@ -83,7 +83,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
     this.loadMakes();
     this.loadAgingCount();
     // A vehicle or action change anywhere refreshes the current list view
-    // (e.g. open-action counts) — live across all connected dashboards.
+    // (e.g. open-action counts), live across all connected dashboards.
     this.unsubs.push(this.realtime.onVehicle((v) => {
       if (this.selected()?.id === v.id) this.selected.set(v);
       this.load();
@@ -213,7 +213,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
   sortDescLabel(): string {
     switch (this.sortBy) {
       case 'price': return 'Highest price';
-      case 'make': return 'Brand Z–A';
+      case 'make': return 'Brand Z-A';
       default: return 'Oldest first';
     }
   }
@@ -221,7 +221,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
   sortAscLabel(): string {
     switch (this.sortBy) {
       case 'price': return 'Lowest price';
-      case 'make': return 'Brand A–Z';
+      case 'make': return 'Brand A-Z';
       default: return 'Newest first';
     }
   }

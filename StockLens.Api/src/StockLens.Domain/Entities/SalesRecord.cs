@@ -15,7 +15,7 @@ public class SalesRecord
     public decimal SalePrice { get; set; }
     public DateOnly SoldDate { get; set; }
 
-    /// <summary>Days from acquisition to sale — a key inventory-health metric.</summary>
+    /// <summary>Days from acquisition to sale, a key inventory-health metric.</summary>
     public int DaysToSell { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

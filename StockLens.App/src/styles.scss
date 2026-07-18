@@ -1,5 +1,5 @@
 /* Hallmark · genre: modern-minimal · tone: technical · anchor hue: 260 (cool slate)
- * structure: dashboard shell (sidebar + filter-rail + card-grid) — preserved
+ * structure: dashboard shell (sidebar + filter-rail + card-grid), preserved
  * type: Space Grotesk (display) + IBM Plex Sans (body) + IBM Plex Mono (data outlier)
  * pre-emit critique: P4 H5 E4 S4 R5 V4
  */
@@ -9,7 +9,7 @@
   --font-body:    'IBM Plex Sans', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
   --font-mono:    'IBM Plex Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
 
-  /* ---- Surfaces — OKLCH, neutrals tinted toward the anchor hue (no flat greys) ---- */
+  /* ---- Surfaces: OKLCH, neutrals tinted toward the anchor hue (no flat greys) ---- */
   --bg:            oklch(95.6% 0.004 260);
   --surface:       oklch(99.2% 0.002 260);
   --surface-2:     oklch(97.2% 0.004 260);
@@ -24,7 +24,7 @@
 
   /* ---- Ink + one accent + semantic status signals ---- */
   --ink:     oklch(24% 0.012 262);   /* black pills / primary actions */
-  --primary: oklch(55% 0.205 262);   /* the single accent — links, focus, active */
+  --primary: oklch(55% 0.205 262);   /* the single accent: links, focus, active */
   --success: oklch(60% 0.15 150);
   --warn:    oklch(66% 0.15 65);
   --danger:  oklch(58% 0.19 27);
@@ -37,12 +37,12 @@
   --danger-soft:   oklch(96% 0.02 27);
   --on-ink:        oklch(99% 0.002 260);   /* text on the ink/accent fills */
 
-  /* ---- Spacing — 4pt scale, named by role ---- */
+  /* ---- Spacing: 4pt scale, named by role ---- */
   --space-3xs: 0.125rem;  --space-2xs: 0.25rem;  --space-xs: 0.5rem;
   --space-sm:  0.75rem;    --space-md:  1rem;     --space-lg: 1.5rem;
   --space-xl:  2.5rem;     --space-2xl: 4rem;     --space-3xl: 6rem;
 
-  /* ---- Z-index — six named levels, no freestyle numbers ---- */
+  /* ---- Z-index: six named levels, no freestyle numbers ---- */
   --z-base: 1; --z-raised: 10; --z-dropdown: 100;
   --z-sticky: 200; --z-modal: 400; --z-toast: 500;
 

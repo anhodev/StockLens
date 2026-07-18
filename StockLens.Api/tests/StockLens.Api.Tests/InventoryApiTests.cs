@@ -43,7 +43,7 @@ public class InventoryApiTests
 
         var trend = summary!.SalesTrend;
         Assert.NotEmpty(trend);
-        // Oldest first, one point per calendar month, no gaps — the chart depends on it.
+        // Oldest first, one point per calendar month, no gaps; the chart depends on it.
         Assert.Equal(trend.OrderBy(p => p.Month).Select(p => p.Month), trend.Select(p => p.Month));
         for (var i = 1; i < trend.Count; i++)
             Assert.Equal(trend[i - 1].Month.AddMonths(1), trend[i].Month);

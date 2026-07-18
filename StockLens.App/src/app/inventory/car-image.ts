@@ -83,7 +83,7 @@ const SILHOUETTES: Record<BodyType, Silhouette> = {
 /**
  * Vehicle image for cards/detail. Uses a real photo when `imageUrl` is provided,
  * otherwise renders a self-contained SVG silhouette matching the vehicle's body
- * style and tinted by its paint colour — no external network dependency.
+ * style and tinted by its paint colour; no external network dependency.
  */
 @Component({
   selector: 'app-car-image',

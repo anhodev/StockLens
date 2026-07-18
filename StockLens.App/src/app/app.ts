@@ -58,7 +58,7 @@ export class App implements OnInit, OnDestroy {
       this.realtime.onAction((a) => {
         const parts = [`${a.status} · by ${a.createdBy}`];
         if (a.note) parts.push(a.note);
-        this.toasts.show(a.actionType, parts.join(' — '), 'info');
+        this.toasts.show(a.actionType, parts.join(' · '), 'info');
       }),
       this.realtime.onStrategy((s) => {
         const parts: string[] = [`${s.scope} · ${s.scopeKey}`];

@@ -4,7 +4,7 @@ namespace StockLens.Application.Dtos;
 
 /// <summary>
 /// Moves a vehicle to <paramref name="ToStatus"/>. Which of the remaining fields are
-/// required depends on the target status — see ChangeVehicleStatusRequestValidator.
+/// required depends on the target status; see ChangeVehicleStatusRequestValidator.
 /// </summary>
 /// <param name="ToStatus">The status to move to.</param>
 /// <param name="Reason">Why the vehicle is moving. Required for Hold and Open.</param>

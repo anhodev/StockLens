@@ -68,7 +68,7 @@
         @if (form.scope === 'Factory') {
           <label>Make</label>
           <select [(ngModel)]="form.scopeKey">
-            <option value="">— Select make —</option>
+            <option value="">Select make</option>
             @for (f of scopeOptions()?.factories ?? []; track f) {
               <option [value]="f">{{ f }}</option>
             }
@@ -76,7 +76,7 @@
         } @else if (form.scope === 'VehicleType') {
           <label>Vehicle type <span class="muted">(Make | Model)</span></label>
           <select [(ngModel)]="form.scopeKey">
-            <option value="">— Select vehicle type —</option>
+            <option value="">Select vehicle type</option>
             @for (vt of scopeOptions()?.vehicleTypes ?? []; track vt) {
               <option [value]="vt">{{ vt }}</option>
             }
@@ -84,9 +84,9 @@
         } @else {
           <label>Vehicle <span class="muted">(by VIN)</span></label>
           <select [(ngModel)]="form.scopeKey">
-            <option value="">— Select vehicle —</option>
+            <option value="">Select vehicle</option>
             @for (v of scopeOptions()?.vehicles ?? []; track v.id) {
-              <option [value]="v.id">{{ v.year }} {{ v.make }} {{ v.model }} — {{ v.vin }}</option>
+              <option [value]="v.id">{{ v.year }} {{ v.make }} {{ v.model }} ({{ v.vin }})</option>
             }
           </select>
         }

@@ -36,7 +36,7 @@ libpeerconnection.log
 *.sublime-workspace
 **/.history/
 
-# Visual Studio Code — ignore everything except the shared team configs
+# Visual Studio Code: ignore everything except the shared team configs
 **/.vscode/*
 !**/.vscode/settings.json
 !**/.vscode/tasks.json

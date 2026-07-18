@@ -6,7 +6,7 @@ namespace StockLens.Application.Services;
 
 /// <summary>
 /// Resolves the effective business-strategy discount for vehicles, so list and detail
-/// prices reflect any applicable strategy. The discount is derived on read — never stored —
+/// prices reflect any applicable strategy. The discount is derived on read (never stored),
 /// so it stays correct when a strategy is added, edited, or expires.
 /// </summary>
 public class VehiclePricingService

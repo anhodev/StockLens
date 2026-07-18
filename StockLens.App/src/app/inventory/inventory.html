@@ -85,7 +85,7 @@
                 <span class="badge" [ngClass]="statusBadge(v.status)">{{ statusLabel(v.status) }}</span>
               </span>
               @if (v.isAgingStock) {
-                <span class="flag" title="Aging stock — over 90 days">▲</span>
+                <span class="flag" title="Aging stock: over 90 days">▲</span>
               } @else if (v.openActionCount > 0) {
                 <span class="badge badge-open">{{ v.openActionCount }}</span>
               }

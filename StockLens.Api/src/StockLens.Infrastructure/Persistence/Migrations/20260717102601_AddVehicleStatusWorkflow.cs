@@ -124,7 +124,7 @@ namespace StockLens.Infrastructure.Persistence.Migrations
                 table: "vehicles");
 
             // Restore the old member names. Deposited has no pre-workflow equivalent, so it
-            // collapses to Reserved — the closest prior meaning.
+            // collapses to Reserved, the closest prior meaning.
             migrationBuilder.Sql("""
                 UPDATE vehicles SET "Status" = 'InStock' WHERE "Status" = 'Open';
                 UPDATE vehicles SET "Status" = 'Reserved' WHERE "Status" IN ('Hold', 'Deposited');

@@ -133,9 +133,9 @@ export class StrategiesComponent implements OnInit, OnDestroy {
 
   scopeDescription(scope: StrategyScope): string {
     switch (scope) {
-      case 'Factory':     return 'Broadest — applies to all vehicles from a given make';
-      case 'VehicleType': return 'Mid-range — applies to a specific make + model combination';
-      case 'Vehicle':     return 'Most specific — applies to a single vehicle by ID';
+      case 'Factory':     return 'Broadest: applies to all vehicles from a given make';
+      case 'VehicleType': return 'Mid-range: applies to a specific make + model combination';
+      case 'Vehicle':     return 'Most specific: applies to a single vehicle by ID';
     }
   }
 

@@ -77,7 +77,7 @@ section h3 {
 .status-btn svg { width: 17px; height: 17px; flex: none; }
 
 /* The vehicle's current status: tinted, and disabled because moving to it is a no-op.
-   Override the global disabled fade — this is a selected state, not an unavailable one.
+   Override the global disabled fade; this is a selected state, not an unavailable one.
    Uses the deeper -100/-200 tints plus a bottom accent bar so the active segment reads
    clearly even for the pale stone (Sold) shade on a white drawer. */
 .status-btn.current {

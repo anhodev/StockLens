@@ -43,7 +43,7 @@ export class VehicleDetailComponent implements OnChanges, OnInit, OnDestroy {
   readonly statusSaving = signal(false);
   readonly statusError = signal<string | null>(null);
 
-  /** Fields the pending transition requires — drives which inputs the form shows. */
+  /** Fields the pending transition requires; drives which inputs the form shows. */
   readonly needsReason = computed(() =>
     this.pendingStatus() === 'Hold' || this.pendingStatus() === 'Open');
   readonly needsDeposit = computed(() => this.pendingStatus() === 'Deposited');
@@ -125,7 +125,7 @@ export class VehicleDetailComponent implements OnChanges, OnInit, OnDestroy {
   startStatusChange(status: VehicleStatus): void {
     if (status === this.vehicle.status) return;
     this.statusForm = this.blankStatusForm();
-    // Selling defaults to today at the current list price — the common case.
+    // Selling defaults to today at the current list price, the common case.
     this.statusForm.soldDate = new Date().toISOString().slice(0, 10);
     this.statusForm.salePrice = this.vehicle.listPrice;
     this.statusError.set(null);

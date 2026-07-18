@@ -1,6 +1,6 @@
 ---
 name: project-standards
-description: Baseline engineering standards for the StockLens Intelligent Inventory Dashboard — the technology, architecture, and coding conventions every backend and frontend change must follow. Apply on any StockLens code task.
+description: Baseline engineering standards for the StockLens Intelligent Inventory Dashboard: the technology, architecture, and coding conventions every backend and frontend change must follow. Apply on any StockLens code task.
 ---
 
 You are working on Intelligent Inventory Dashboard.
