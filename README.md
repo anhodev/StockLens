@@ -1,43 +1,58 @@
 # StockLens — Intelligent Inventory Dashboard
 
-Real-time dealership inventory management: surface aging stock, log actions on it, and
-manage pricing/disposition strategies at factory, vehicle-type, or single-vehicle scope.
+Real-time dealership inventory management: surface aging stock, move vehicles through their
+lifecycle with an audit trail, log actions on them, manage pricing/disposition strategies at
+factory, vehicle-type, or single-vehicle scope, and track sales-team performance.
 
 ## Projects
 
 | Folder | Stack | Purpose |
 | --- | --- | --- |
-| `StockLens.Api` | .NET 10 minimal API, clean architecture, EF Core + PostgreSQL, SignalR | REST API + real-time hub |
-| `StockLens.App` | Angular 20, signals, `@microsoft/signalr` | Dashboard web app |
+| `StockLens.Api` | .NET 10 minimal API, clean architecture, EF Core + PostgreSQL, SignalR, Serilog | REST API + real-time hub |
+| `StockLens.App` | Angular 20, standalone components, signals, `@microsoft/signalr` | Dashboard web app |
 
 ### Backend layout (clean architecture)
 
 ```
 StockLens.Api/
 ├─ src/
-│  ├─ StockLens.Domain          # Entities, enums, aging rule (no dependencies)
-│  ├─ StockLens.Application     # DTOs, interfaces, strategy resolver, validators, dashboard service
-│  ├─ StockLens.Infrastructure  # EF Core DbContext, configs, migrations, seeder
-│  └─ StockLens.Api             # Minimal-API endpoints, SignalR hub, DI, Program.cs
+│  ├─ StockLens.Domain          # Entities, enums, aging/inventory policy (no dependencies)
+│  ├─ StockLens.Application     # DTOs, interfaces, strategy resolver, pricing/status/dashboard services, validators
+│  ├─ StockLens.Infrastructure  # EF Core DbContext, entity configs, migrations, seeder
+│  └─ StockLens.Api             # Minimal-API endpoints, SignalR hub, request-logging middleware, DI, Program.cs
 ├─ tests/
 │  ├─ StockLens.Domain.Tests    # Aging + strategy-resolution unit tests
-│  └─ StockLens.Api.Tests       # WebApplicationFactory integration tests
+│  └─ StockLens.Api.Tests       # WebApplicationFactory integration tests (inventory + status workflows)
 └─ docker-compose.yml           # PostgreSQL 16
 ```
 
 ## Requirements covered
 
-1. **Inventory visualization** — filterable list (make, model, status, age, search, sort, paging).
-2. **Aging stock identification** — vehicles in stock > 90 days are flagged (`isAgingStock`),
-   highlighted in the table, counted on the dashboard, and available at `GET /api/vehicles/aging`.
-3. **Actionable insights** — managers log/persist actions per vehicle
-   (e.g. *Price Reduction Planned*) with status tracking.
-4. **Dashboard extras** — top sales, stock value, avg days-in-inventory, avg days-to-sell,
-   30-day sold count/revenue, stock-by-make breakdown.
-5. **Business strategies** — create/update at factory (make), vehicle-type (make+model),
-   or specific-vehicle scope; the API resolves the most specific match per vehicle.
-6. **Real time** — every mutation broadcasts over SignalR (`/hubs/inventory`); the dashboard
-   and inventory list update live.
+1. **Inventory visualization** — filterable list (make, model, status, age, free-text search,
+   sort, paging) with a per-vehicle detail view.
+2. **Aging stock identification** — vehicles in stock past the aging threshold (90 days) are
+   flagged (`isAgingStock`), highlighted in the table, counted on the dashboard, and available
+   at `GET /api/vehicles/aging`.
+3. **Vehicle lifecycle** — vehicles move through `Open → Deposited → Hold → Sold` via a
+   dedicated status endpoint that validates the transition, captures the required evidence
+   (deposit amount, salesperson, sold date), and records every change as an audit trail
+   (`GET /api/vehicles/{id}/status-history`). Every state except `Sold` still ages.
+4. **Actionable insights** — managers log/persist actions per vehicle
+   (e.g. *Price Reduction Planned*) with status tracking; actions on sold vehicles are blocked.
+5. **Strategy-driven pricing** — the effective business-strategy discount is resolved **on read**
+   (never stored), so each vehicle reports a live `discountPercent` and `netPrice` that stay
+   correct as strategies are added, edited, or expire.
+6. **Business strategies** — create/update at factory (make), vehicle-type (make+model),
+   or specific-vehicle scope; the API resolves the most specific in-effect match per vehicle.
+7. **Sales performance** — sold vehicles are attributed to a salesperson; the dashboard shows
+   top sales and a monthly sales trend, and `GET /api/salespeople` reports each member's
+   lifetime unit count and revenue.
+8. **Dashboard KPIs** — total in stock, aging count, stock value, avg days-in-inventory,
+   avg days-to-sell, 30-day sold count/revenue, stock-by-make breakdown, and the sales trend.
+9. **Real time** — every mutation broadcasts over SignalR (`/hubs/inventory`); the dashboard,
+   inventory list, and toast notifications update live.
+10. **Observability** — Serilog structured logging with a per-request correlation id
+    (`X-Correlation-Id`) attached to every log line via request-logging middleware.
 
 ## Prerequisites
 
@@ -82,9 +97,9 @@ cd StockLens.Api/src/StockLens.Api
 dotnet run
 ```
 
-Listens on `http://localhost:5080` (Swagger UI at `/swagger`). On startup the API applies EF
-migrations and seeds representative data (in-stock + aging vehicles, sales, strategies at
-every scope).
+Listens on `http://localhost:5080` (Swagger UI at `/swagger`; `/` redirects there). On startup
+the API applies EF migrations and seeds representative data (in-stock, deposited, held, and
+aging vehicles; salespeople; sales history; strategies at every scope).
 
 > The connection string lives in `appsettings.json` / `appsettings.Development.json`
 > (`Host=localhost;Port=5433;Database=stocklens;Username=stocklens;Password=stocklens`).
@@ -106,19 +121,28 @@ If the API is not on `http://localhost:5080`, update `API_BASE` in
 
 ```bash
 cd StockLens.Api
-dotnet test                   # 14 domain unit tests + 4 API integration tests (needs the DB up)
+dotnet test                   # domain unit tests + API integration tests (needs the DB up)
 ```
+
+- **Domain unit tests** — aging rules and strategy resolution.
+- **API integration tests** — inventory endpoints and the vehicle status workflow, run against
+  a real API host via `WebApplicationFactory`.
 
 ## Key endpoints
 
 | Method | Route | Notes |
 | --- | --- | --- |
 | GET | `/api/vehicles` | Filter: `make, model, status, agingOnly, minAgeDays, maxAgeDays, search, sortBy, desc, page, pageSize` |
-| GET | `/api/vehicles/aging` | Aging stock (> 90 days) |
+| GET | `/api/vehicles/aging` | Aging stock (past the 90-day threshold) |
+| GET | `/api/vehicles/{id}` | Single vehicle (with resolved `netPrice`) |
 | POST/PUT | `/api/vehicles`, `/api/vehicles/{id}` | Add / update a vehicle |
+| POST | `/api/vehicles/{id}/status` | Change lifecycle status with required evidence |
+| GET | `/api/vehicles/{id}/status-history` | Audit trail of status changes |
 | GET/POST | `/api/vehicles/{id}/actions` | List / log actions |
 | PUT | `/api/actions/{id}` | Update an action's status |
 | GET | `/api/vehicles/{id}/effective-strategy` | Resolved strategy (Vehicle > VehicleType > Factory) |
 | GET/POST/PUT/DELETE | `/api/strategies` | Manage strategies at any scope |
-| GET | `/api/dashboard/summary` | KPIs, top sales, stock-by-make |
-| Hub | `/hubs/inventory` | SignalR: `VehicleChanged`, `ActionChanged`, `DashboardChanged` |
+| GET | `/api/strategies/scope-options` | Available makes, vehicle types, and vehicles for scoping |
+| GET | `/api/salespeople` | Sales team with lifetime unit count and revenue (`activeOnly` filter) |
+| GET | `/api/dashboard/summary` | KPIs, top sales, stock-by-make, monthly sales trend |
+| Hub | `/hubs/inventory` | SignalR: `VehicleChanged`, `ActionChanged`, `StrategyChanged`, `DashboardChanged` |
