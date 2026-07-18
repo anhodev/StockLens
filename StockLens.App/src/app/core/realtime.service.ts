@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { API_BASE } from './config';
-import { DashboardSummary, Vehicle, VehicleAction } from './models';
+import { BusinessStrategy, DashboardSummary, Vehicle, VehicleAction } from './models';
 
 /**
  * Wraps the SignalR connection to /hubs/inventory and surfaces server-pushed
@@ -15,10 +15,12 @@ export class RealtimeService {
   readonly lastVehicle = signal<Vehicle | null>(null);
   readonly lastAction = signal<VehicleAction | null>(null);
   readonly lastDashboard = signal<DashboardSummary | null>(null);
+  readonly lastStrategy = signal<BusinessStrategy | null>(null);
 
   private vehicleHandlers = new Set<(v: Vehicle) => void>();
   private actionHandlers = new Set<(a: VehicleAction) => void>();
   private dashboardHandlers = new Set<(d: DashboardSummary) => void>();
+  private strategyHandlers = new Set<(s: BusinessStrategy) => void>();
 
   start(): void {
     if (this.connection) return;
@@ -40,6 +42,10 @@ export class RealtimeService {
     this.connection.on('DashboardChanged', (d: DashboardSummary) => {
       this.lastDashboard.set(d);
       this.dashboardHandlers.forEach((h) => h(d));
+    });
+    this.connection.on('StrategyChanged', (s: BusinessStrategy) => {
+      this.lastStrategy.set(s);
+      this.strategyHandlers.forEach((h) => h(s));
     });
 
     this.connection.onreconnected(() => this.connected.set(true));
@@ -65,5 +71,10 @@ export class RealtimeService {
   onDashboard(handler: (d: DashboardSummary) => void): () => void {
     this.dashboardHandlers.add(handler);
     return () => this.dashboardHandlers.delete(handler);
+  }
+
+  onStrategy(handler: (s: BusinessStrategy) => void): () => void {
+    this.strategyHandlers.add(handler);
+    return () => this.strategyHandlers.delete(handler);
   }
 }

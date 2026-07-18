@@ -11,4 +11,5 @@ public interface IInventoryNotifier
     Task VehicleChangedAsync(VehicleDto vehicle, CancellationToken ct = default);
     Task ActionChangedAsync(VehicleActionDto action, CancellationToken ct = default);
     Task DashboardChangedAsync(DashboardSummaryDto summary, CancellationToken ct = default);
+    Task StrategyChangedAsync(BusinessStrategyDto strategy, CancellationToken ct = default);
 }

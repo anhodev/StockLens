@@ -19,4 +19,7 @@ public class SignalRInventoryNotifier : IInventoryNotifier
 
     public Task DashboardChangedAsync(DashboardSummaryDto summary, CancellationToken ct = default) =>
         _hub.Clients.All.SendAsync(InventoryHub.DashboardChanged, summary, ct);
+
+    public Task StrategyChangedAsync(BusinessStrategyDto strategy, CancellationToken ct = default) =>
+        _hub.Clients.All.SendAsync(InventoryHub.StrategyChanged, strategy, ct);
 }

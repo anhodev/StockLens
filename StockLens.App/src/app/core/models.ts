@@ -163,6 +163,20 @@ export interface ChangeStatusRequest {
   changedBy?: string | null;
 }
 
+export interface VehicleSummary {
+  id: string;
+  vin: string;
+  make: string;
+  model: string;
+  year: number;
+}
+
+export interface StrategyScopeOptions {
+  factories: string[];
+  vehicleTypes: string[];
+  vehicles: VehicleSummary[];
+}
+
 export const VEHICLE_STATUSES: VehicleStatus[] = ['Open', 'Deposited', 'Hold', 'Sold'];
 
 export const ACTION_TYPES: ActionType[] = [

@@ -154,6 +154,11 @@ tbody tr:hover { background: var(--surface-2); }
 .badge-open { background: #eaf0fe; color: #1d4ed8; }
 .badge-done { background: #eaf7ef; color: #15803d; }
 .badge-cut { background: oklch(95% 0.03 150); color: oklch(48% 0.14 150); }
+.badge-strategy {
+  background: oklch(93% 0.028 262);
+  color: oklch(40% 0.16 262);
+  border: 1px solid oklch(86% 0.04 262);
+}
 
 .muted { color: var(--text-dim); }
 .right { text-align: right; }

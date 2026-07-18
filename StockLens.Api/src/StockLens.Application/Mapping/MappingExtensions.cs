@@ -37,5 +37,5 @@ public static class MappingExtensions
         r.Vehicle?.Model ?? string.Empty,
         r.Vehicle?.Year ?? 0,
         r.SalePrice, r.SoldDate, r.DaysToSell,
-        r.Salesperson?.FullName ?? "—");
+        r.Salesperson?.FullName ?? string.Empty);
 }

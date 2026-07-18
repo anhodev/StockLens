@@ -41,7 +41,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
   // Filter form state.
   readonly search = signal('');
   make = '';
-  status: VehicleStatus | '' = '';
+  status: VehicleStatus | '' = 'Open';
   agingOnly = false;
   sortBy: SortKey = 'age';
   desc = true;
@@ -84,7 +84,11 @@ export class InventoryComponent implements OnInit, OnDestroy {
     this.loadAgingCount();
     // A vehicle or action change anywhere refreshes the current list view
     // (e.g. open-action counts) — live across all connected dashboards.
-    this.unsubs.push(this.realtime.onVehicle(() => { this.load(); this.loadAgingCount(); }));
+    this.unsubs.push(this.realtime.onVehicle((v) => {
+      if (this.selected()?.id === v.id) this.selected.set(v);
+      this.load();
+      this.loadAgingCount();
+    }));
     this.unsubs.push(this.realtime.onAction(() => this.load()));
   }
 

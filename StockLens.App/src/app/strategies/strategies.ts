@@ -1,8 +1,9 @@
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ApiService } from '../core/api.service';
-import { BusinessStrategy, STRATEGY_SCOPES, StrategyScope } from '../core/models';
+import { RealtimeService } from '../core/realtime.service';
+import { BusinessStrategy, STRATEGY_SCOPES, StrategyScopeOptions, StrategyScope } from '../core/models';
 
 type StrategyForm = {
   id: string | null;
@@ -24,11 +25,14 @@ type StrategyForm = {
   styleUrl: './strategies.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StrategiesComponent implements OnInit {
+export class StrategiesComponent implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private realtime = inject(RealtimeService);
+  private unsub?: () => void;
 
   readonly scopes = STRATEGY_SCOPES;
   readonly strategies = signal<BusinessStrategy[]>([]);
+  readonly scopeOptions = signal<StrategyScopeOptions | null>(null);
   readonly editing = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
@@ -37,24 +41,38 @@ export class StrategiesComponent implements OnInit {
 
   ngOnInit(): void {
     this.load();
+    this.loadScopeOptions();
+    this.unsub = this.realtime.onStrategy(() => this.load());
+  }
+
+  ngOnDestroy(): void {
+    this.unsub?.();
   }
 
   load(): void {
     this.api.getStrategies().subscribe((s) => this.strategies.set(s));
   }
 
+  private loadScopeOptions(): void {
+    this.api.getStrategyScopeOptions().subscribe((o) => this.scopeOptions.set(o));
+  }
+
   private blank(): StrategyForm {
+    const effectiveFrom = new Date().toISOString().slice(0, 10);
+    const targetDaysToSell = 60;
+    const to = new Date(effectiveFrom);
+    to.setDate(to.getDate() + targetDaysToSell);
     return {
       id: null,
       scope: 'Factory',
       scopeKey: '',
       name: '',
       description: '',
-      targetDaysToSell: 60,
+      targetDaysToSell,
       discountPercent: 3,
       isActive: true,
-      effectiveFrom: new Date().toISOString().slice(0, 10),
-      effectiveTo: null,
+      effectiveFrom,
+      effectiveTo: to.toISOString().slice(0, 10),
     };
   }
 
@@ -85,12 +103,51 @@ export class StrategiesComponent implements OnInit {
     this.editing.set(false);
   }
 
+  scopeLabel(scope: StrategyScope): string {
+    return scope === 'VehicleType' ? 'Vehicle Type' : scope;
+  }
+
+  scopeIcon(scope: StrategyScope): string {
+    switch (scope) {
+      case 'Factory':     return '◉';
+      case 'VehicleType': return '◎';
+      case 'Vehicle':     return '◈';
+    }
+  }
+
+  scopeLevel(scope: StrategyScope): number {
+    switch (scope) {
+      case 'Factory':     return 1;
+      case 'VehicleType': return 2;
+      case 'Vehicle':     return 3;
+    }
+  }
+
   scopeHint(scope: StrategyScope): string {
     switch (scope) {
-      case 'Factory': return 'Make, e.g. "Toyota"';
+      case 'Factory':     return 'Make, e.g. "Toyota"';
       case 'VehicleType': return 'Make|Model, e.g. "Ford|F-150"';
-      case 'Vehicle': return 'A specific VehicleId';
+      case 'Vehicle':     return 'A specific VehicleId';
     }
+  }
+
+  scopeDescription(scope: StrategyScope): string {
+    switch (scope) {
+      case 'Factory':     return 'Broadest — applies to all vehicles from a given make';
+      case 'VehicleType': return 'Mid-range — applies to a specific make + model combination';
+      case 'Vehicle':     return 'Most specific — applies to a single vehicle by ID';
+    }
+  }
+
+  onScopeChange(): void {
+    this.form.scopeKey = '';
+  }
+
+  recalcEffectiveTo(): void {
+    if (!this.form.effectiveFrom || !this.form.targetDaysToSell) return;
+    const from = new Date(this.form.effectiveFrom);
+    from.setDate(from.getDate() + this.form.targetDaysToSell);
+    this.form.effectiveTo = from.toISOString().slice(0, 10);
   }
 
   save(): void {

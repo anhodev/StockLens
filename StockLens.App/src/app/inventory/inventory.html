@@ -110,6 +110,18 @@
                 <span class="spec muted">@if (hasTrim(v)) {<span>{{ v.trim }} · </span>}{{ v.mileage | number }} mi · {{ v.color }}</span>
                 <span class="unit muted">list</span>
               </div>
+              <div class="card-tag-row">
+                <span class="badge" [ngClass]="v.openActionCount > 0 ? 'badge-open' : 'badge-sold'"
+                      [title]="v.openActionCount + ' open action(s) logged'">
+                  {{ v.openActionCount }} {{ v.openActionCount === 1 ? 'action' : 'actions' }}
+                </span>
+                @if (v.discountPercent) {
+                  <span class="badge badge-strategy"
+                        [title]="'Strategy applied · −' + v.discountPercent + '% discount'">
+                    Strategy
+                  </span>
+                }
+              </div>
             </div>
           </article>
         } @empty {
@@ -143,13 +155,16 @@
                     <span class="price-was">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</span>
                     <span class="price-cut">{{ v.netPrice | currency:'USD':'symbol':'1.0-0' }}</span>
                     <span class="badge badge-cut">−{{ v.discountPercent }}%</span>
+                    <span class="badge badge-strategy table-strategy-badge"
+                          [title]="'Strategy applied · −' + v.discountPercent + '% discount'">
+                      Strategy
+                    </span>
                   } @else {
                     {{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}
                   }
                 </td>
                 <td class="right">
                   @if (v.openActionCount > 0) { <span class="badge badge-open">{{ v.openActionCount }} open</span> }
-                  @else { <span class="muted">—</span> }
                 </td>
               </tr>
             } @empty {

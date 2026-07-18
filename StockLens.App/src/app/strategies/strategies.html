@@ -7,10 +7,19 @@
 </div>
 
 @for (scope of scopes; track scope) {
-  <div class="card scope-block">
+  <div class="card scope-block" [ngClass]="'scope-' + scope.toLowerCase()">
     <div class="scope-head">
-      <h3>{{ scope }}</h3>
-      <span class="muted">{{ scopeHint(scope) }}</span>
+      <div class="scope-title">
+        <span class="scope-icon">{{ scopeIcon(scope) }}</span>
+        <div class="scope-title-text">
+          <h3>{{ scopeLabel(scope) }}</h3>
+          <span class="muted">{{ scopeDescription(scope) }}</span>
+        </div>
+      </div>
+      <div class="scope-meta">
+        <span class="scope-lvl">Lvl {{ scopeLevel(scope) }}</span>
+        <span class="muted scope-count">{{ grouped(scope).length }} {{ grouped(scope).length === 1 ? 'rule' : 'rules' }}</span>
+      </div>
     </div>
     <table>
       <thead>
@@ -21,8 +30,8 @@
           <tr>
             <td><strong>{{ s.name }}</strong><br /><span class="muted">{{ s.description }}</span></td>
             <td class="mono">{{ s.scopeKey }}</td>
-            <td class="right">{{ s.discountPercent != null ? s.discountPercent + '%' : '—' }}</td>
-            <td class="right">{{ s.targetDaysToSell ?? '—' }}</td>
+            <td class="right">{{ s.discountPercent != null ? s.discountPercent + '%' : '' }}</td>
+            <td class="right">{{ s.targetDaysToSell ?? '' }}</td>
             <td>
               <span class="badge" [ngClass]="s.isActive ? 'badge-done' : 'badge-sold'">
                 {{ s.isActive ? 'Active' : 'Inactive' }}
@@ -51,13 +60,36 @@
     <div class="drawer-body">
       <div class="field">
         <label>Scope</label>
-        <select [(ngModel)]="form.scope">
+        <select [(ngModel)]="form.scope" (ngModelChange)="onScopeChange()">
           @for (sc of scopes; track sc) { <option [value]="sc">{{ sc }}</option> }
         </select>
       </div>
       <div class="field">
-        <label>Scope key <span class="muted">({{ scopeHint(form.scope) }})</span></label>
-        <input [(ngModel)]="form.scopeKey" placeholder="e.g. Toyota" />
+        @if (form.scope === 'Factory') {
+          <label>Make</label>
+          <select [(ngModel)]="form.scopeKey">
+            <option value="">— Select make —</option>
+            @for (f of scopeOptions()?.factories ?? []; track f) {
+              <option [value]="f">{{ f }}</option>
+            }
+          </select>
+        } @else if (form.scope === 'VehicleType') {
+          <label>Vehicle type <span class="muted">(Make | Model)</span></label>
+          <select [(ngModel)]="form.scopeKey">
+            <option value="">— Select vehicle type —</option>
+            @for (vt of scopeOptions()?.vehicleTypes ?? []; track vt) {
+              <option [value]="vt">{{ vt }}</option>
+            }
+          </select>
+        } @else {
+          <label>Vehicle <span class="muted">(by VIN)</span></label>
+          <select [(ngModel)]="form.scopeKey">
+            <option value="">— Select vehicle —</option>
+            @for (v of scopeOptions()?.vehicles ?? []; track v.id) {
+              <option [value]="v.id">{{ v.year }} {{ v.make }} {{ v.model }} — {{ v.vin }}</option>
+            }
+          </select>
+        }
       </div>
       <div class="field">
         <label>Name</label>
@@ -74,16 +106,18 @@
         </div>
         <div class="field">
           <label>Target days to sell</label>
-          <input type="number" [(ngModel)]="form.targetDaysToSell" min="1" />
+          <input type="number" [(ngModel)]="form.targetDaysToSell" min="1"
+                 (ngModelChange)="recalcEffectiveTo()" />
         </div>
       </div>
       <div class="row2">
         <div class="field">
           <label>Effective from</label>
-          <input type="date" [(ngModel)]="form.effectiveFrom" />
+          <input type="date" [(ngModel)]="form.effectiveFrom"
+                 (ngModelChange)="recalcEffectiveTo()" />
         </div>
         <div class="field">
-          <label>Effective to (optional)</label>
+          <label>Effective to</label>
           <input type="date" [(ngModel)]="form.effectiveTo" />
         </div>
       </div>

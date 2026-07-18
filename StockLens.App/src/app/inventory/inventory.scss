@@ -193,6 +193,9 @@
 .aging-row { background: #fffaf5; }
 .aging-row:hover { background: #fff4ea; }
 
+.card-tag-row { display: flex; gap: 5px; padding-top: 5px; }
+.table-strategy-badge { margin-left: 5px; }
+
 .results-foot {
   display: flex; justify-content: space-between; align-items: center;
   padding: 16px 2px 0;

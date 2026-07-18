@@ -4,6 +4,7 @@ using StockLens.Application.Abstractions;
 using StockLens.Application.Dtos;
 using StockLens.Application.Mapping;
 using StockLens.Domain.Entities;
+using StockLens.Domain.Enums;
 
 namespace StockLens.Api.Endpoints;
 
@@ -43,8 +44,14 @@ public static class ActionEndpoints
     {
         var logger = loggerFactory.CreateLogger(LogCategory);
 
-        if (!await db.Vehicles.AnyAsync(v => v.Id == vehicleId, ct))
-            return Results.NotFound();
+        var vehicle = await db.Vehicles.AsNoTracking()
+            .Select(v => new { v.Id, v.Status })
+            .FirstOrDefaultAsync(v => v.Id == vehicleId, ct);
+
+        if (vehicle is null) return Results.NotFound();
+        if (vehicle.Status == VehicleStatus.Sold)
+            return Results.Problem("Actions cannot be added to sold vehicles.",
+                statusCode: StatusCodes.Status422UnprocessableEntity);
 
         var action = new VehicleAction
         {
@@ -73,8 +80,14 @@ public static class ActionEndpoints
     {
         var logger = loggerFactory.CreateLogger(LogCategory);
 
-        var action = await db.VehicleActions.FirstOrDefaultAsync(a => a.Id == id, ct);
+        var action = await db.VehicleActions
+            .Include(a => a.Vehicle)
+            .FirstOrDefaultAsync(a => a.Id == id, ct);
         if (action is null) return Results.NotFound();
+
+        if (action.Vehicle?.Status == VehicleStatus.Sold)
+            return Results.Problem("Actions on sold vehicles cannot be modified.",
+                statusCode: StatusCodes.Status422UnprocessableEntity);
 
         action.ActionType = req.ActionType;
         action.Status = req.Status;

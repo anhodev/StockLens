@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe, DecimalPipe, NgClass } from '@angular/common';
+import { CurrencyPipe, DatePipe, NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ApiService } from '../core/api.service';
 import { RealtimeService } from '../core/realtime.service';
@@ -25,7 +25,7 @@ const decimal = (n: number) =>
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CurrencyPipe, DecimalPipe, DatePipe, NgClass, SalesChartComponent],
+  imports: [CurrencyPipe, DatePipe, NgClass, SalesChartComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

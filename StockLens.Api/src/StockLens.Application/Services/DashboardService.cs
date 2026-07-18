@@ -50,8 +50,8 @@ public class DashboardService
             .AsNoTracking()
             .Include(s => s.Vehicle)
             .Include(s => s.Salesperson)
-            .OrderByDescending(s => s.SalePrice)
-            .Take(5)
+            .OrderByDescending(s => s.SoldDate)
+            .Take(10)
             .ToListAsync(ct);
 
         var salesTrend = await GetSalesTrendAsync(today, ct);

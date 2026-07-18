@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { API_BASE } from './config';
 import {
   BusinessStrategy, ChangeStatusRequest, DashboardSummary, EffectiveStrategy, PagedResult,
-  Salesperson, Vehicle, VehicleAction, VehicleFilter, VehicleStatusChange,
+  Salesperson, StrategyScopeOptions, Vehicle, VehicleAction, VehicleFilter, VehicleStatusChange,
 } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -74,6 +74,10 @@ export class ApiService {
 
   getStrategies(): Observable<BusinessStrategy[]> {
     return this.http.get<BusinessStrategy[]>(`${this.base}/api/strategies`);
+  }
+
+  getStrategyScopeOptions(): Observable<StrategyScopeOptions> {
+    return this.http.get<StrategyScopeOptions>(`${this.base}/api/strategies/scope-options`);
   }
 
   createStrategy(body: Partial<BusinessStrategy>): Observable<BusinessStrategy> {

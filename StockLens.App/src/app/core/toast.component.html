@@ -1,0 +1,13 @@
+<div class="toast-stack">
+  @for (t of toast.toasts(); track t.id) {
+    <div class="toast" [ngClass]="'toast-' + t.type" (click)="toast.dismiss(t.id)" role="status">
+      <span class="toast-icon" aria-hidden="true">{{ icon(t.type) }}</span>
+      <span class="toast-body">
+        <span class="toast-msg">{{ t.message }}</span>
+        @if (t.detail) {
+          <span class="toast-detail">{{ t.detail }}</span>
+        }
+      </span>
+    </div>
+  }
+</div>

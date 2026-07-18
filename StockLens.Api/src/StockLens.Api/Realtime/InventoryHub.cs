@@ -11,4 +11,5 @@ public class InventoryHub : Hub
     public const string VehicleChanged = "VehicleChanged";
     public const string ActionChanged = "ActionChanged";
     public const string DashboardChanged = "DashboardChanged";
+    public const string StrategyChanged = "StrategyChanged";
 }

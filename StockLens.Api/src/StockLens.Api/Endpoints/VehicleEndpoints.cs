@@ -48,6 +48,8 @@ public static class VehicleEndpoints
         {
             case StatusChangeOutcome.VehicleNotFound:
                 return Results.NotFound();
+            case StatusChangeOutcome.VehicleSold:
+                return Results.Problem(result.Message, statusCode: StatusCodes.Status422UnprocessableEntity);
             case StatusChangeOutcome.SalespersonNotFound:
             case StatusChangeOutcome.AlreadyInStatus:
                 return Results.Problem(result.Message, statusCode: StatusCodes.Status400BadRequest);
@@ -167,6 +169,7 @@ public static class VehicleEndpoints
     {
         var v = await db.Vehicles.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
         if (v is null) return Results.NotFound();
+        if (v.Status == VehicleStatus.Sold) return Results.NoContent();
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var typeKey = BusinessStrategy.VehicleTypeKey(v.Make, v.Model);

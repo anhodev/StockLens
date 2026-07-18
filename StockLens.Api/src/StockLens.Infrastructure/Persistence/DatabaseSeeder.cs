@@ -229,7 +229,7 @@ public static class DatabaseSeeder
                     Make = pick.Make,
                     Model = pick.Model,
                     Year = pick.Year,
-                    Trim = "—",
+                    Trim = string.Empty,
                     Color = "Various",
                     Mileage = rnd.Next(2000, 40000),
                     BodyType = pick.Body,

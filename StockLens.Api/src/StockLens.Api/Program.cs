@@ -24,11 +24,17 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IInventoryNotifier, SignalRInventoryNotifier>();
 
-// Serialize enums as strings across both HTTP and SignalR payloads.
+// Serialize enums as strings and use camelCase to match what Minimal API HTTP sends.
+// SignalR's AddJsonProtocol uses its own JsonSerializerOptions that do NOT inherit from
+// ConfigureHttpJsonOptions, so both must be configured explicitly.
 builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddSignalR()
-    .AddJsonProtocol(o => o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+    .AddJsonProtocol(o =>
+    {
+        o.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        o.PayloadSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 
 builder.Services.AddCors(options => options.AddPolicy(CorsPolicy, policy =>
     policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()

@@ -14,6 +14,7 @@ public enum StatusChangeOutcome
     VehicleNotFound,
     SalespersonNotFound,
     AlreadyInStatus,
+    VehicleSold,
 }
 
 public record StatusChangeResult(StatusChangeOutcome Outcome, VehicleDto? Vehicle = null, string? Message = null);
@@ -50,6 +51,11 @@ public class VehicleStatusService
 
         if (vehicle is null)
             return new StatusChangeResult(StatusChangeOutcome.VehicleNotFound);
+
+        if (vehicle.Status == VehicleStatus.Sold)
+            return new StatusChangeResult(
+                StatusChangeOutcome.VehicleSold,
+                Message: "Sold vehicles cannot have their status changed.");
 
         if (vehicle.Status == req.ToStatus)
             return new StatusChangeResult(
