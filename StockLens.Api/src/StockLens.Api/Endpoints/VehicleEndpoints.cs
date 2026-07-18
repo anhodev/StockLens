@@ -70,7 +70,7 @@ public static class VehicleEndpoints
     }
 
     private static async Task<IResult> GetVehicles(
-        IApplicationDbContext db, [AsParameters] VehicleFilter filter, CancellationToken ct)
+        IApplicationDbContext db, VehiclePricingService pricing, [AsParameters] VehicleFilter filter, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var query = db.Vehicles.AsNoTracking().Include(v => v.Actions).Include(v => v.Salesperson).AsQueryable();
@@ -126,12 +126,14 @@ public static class VehicleEndpoints
         var size = Math.Clamp(filter.PageSize, 1, 200);
 
         var items = await query.Skip((page - 1) * size).Take(size).ToListAsync(ct);
-        var dtos = items.Select(v => v.ToDto(today)).ToList();
+        var discounts = await pricing.ResolveDiscountsAsync(items, today, ct);
+        var dtos = items.Select(v => v.ToDto(today, discounts.GetValueOrDefault(v.Id))).ToList();
 
         return Results.Ok(new PagedResult<VehicleDto>(dtos, total, page, size));
     }
 
-    private static async Task<IResult> GetAgingStock(IApplicationDbContext db, CancellationToken ct)
+    private static async Task<IResult> GetAgingStock(
+        IApplicationDbContext db, VehiclePricingService pricing, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var cutoff = today.AddDays(-InventoryPolicy.AgingThresholdDays);
@@ -144,15 +146,20 @@ public static class VehicleEndpoints
             .OrderBy(v => v.AcquiredDate)
             .ToListAsync(ct);
 
-        return Results.Ok(items.Select(v => v.ToDto(today)).ToList());
+        var discounts = await pricing.ResolveDiscountsAsync(items, today, ct);
+        return Results.Ok(items.Select(v => v.ToDto(today, discounts.GetValueOrDefault(v.Id))).ToList());
     }
 
-    private static async Task<IResult> GetVehicle(Guid id, IApplicationDbContext db, CancellationToken ct)
+    private static async Task<IResult> GetVehicle(
+        Guid id, IApplicationDbContext db, VehiclePricingService pricing, CancellationToken ct)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var v = await db.Vehicles.AsNoTracking().Include(x => x.Actions).Include(x => x.Salesperson)
             .FirstOrDefaultAsync(x => x.Id == id, ct);
-        return v is null ? Results.NotFound() : Results.Ok(v.ToDto(today));
+        if (v is null) return Results.NotFound();
+
+        var discount = await pricing.ResolveDiscountAsync(v, today, ct);
+        return Results.Ok(v.ToDto(today, discount));
     }
 
     private static async Task<IResult> GetEffectiveStrategy(
@@ -179,7 +186,7 @@ public static class VehicleEndpoints
 
     private static async Task<IResult> CreateVehicle(
         CreateVehicleRequest req, IApplicationDbContext db, IInventoryNotifier notifier,
-        DashboardService dashboard, ILoggerFactory loggerFactory, CancellationToken ct)
+        DashboardService dashboard, VehiclePricingService pricing, ILoggerFactory loggerFactory, CancellationToken ct)
     {
         var logger = loggerFactory.CreateLogger(LogCategory);
 
@@ -209,7 +216,7 @@ public static class VehicleEndpoints
             vehicle.Id, vehicle.Vin, vehicle.Make, vehicle.Model);
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var dto = vehicle.ToDto(today);
+        var dto = vehicle.ToDto(today, await pricing.ResolveDiscountAsync(vehicle, today, ct));
         await notifier.VehicleChangedAsync(dto, ct);
         await notifier.DashboardChangedAsync(await dashboard.GetSummaryAsync(ct), ct);
 
@@ -218,7 +225,7 @@ public static class VehicleEndpoints
 
     private static async Task<IResult> UpdateVehicle(
         Guid id, UpdateVehicleRequest req, IApplicationDbContext db, IInventoryNotifier notifier,
-        DashboardService dashboard, ILoggerFactory loggerFactory, CancellationToken ct)
+        DashboardService dashboard, VehiclePricingService pricing, ILoggerFactory loggerFactory, CancellationToken ct)
     {
         var logger = loggerFactory.CreateLogger(LogCategory);
 
@@ -245,7 +252,7 @@ public static class VehicleEndpoints
         logger.LogInformation("Vehicle {VehicleId} updated (status {Status})", v.Id, v.Status);
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var dto = v.ToDto(today);
+        var dto = v.ToDto(today, await pricing.ResolveDiscountAsync(v, today, ct));
         await notifier.VehicleChangedAsync(dto, ct);
         await notifier.DashboardChangedAsync(await dashboard.GetSummaryAsync(ct), ct);
 

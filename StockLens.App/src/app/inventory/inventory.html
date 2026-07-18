@@ -99,10 +99,15 @@
             <div class="car-info">
               <div class="info-row">
                 <strong class="title">{{ v.year }} {{ v.make }} {{ v.model }}</strong>
-                <strong class="price">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</strong>
+                <span class="price-wrap">
+                  @if (v.discountPercent) {
+                    <span class="price-was">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</span>
+                  }
+                  <strong class="price" [class.price-cut]="v.discountPercent">{{ v.netPrice | currency:'USD':'symbol':'1.0-0' }}</strong>
+                </span>
               </div>
               <div class="info-row">
-                <span class="spec muted">{{ v.trim }} · {{ v.mileage | number }} mi · {{ v.color }}</span>
+                <span class="spec muted">@if (hasTrim(v)) {<span>{{ v.trim }} · </span>}{{ v.mileage | number }} mi · {{ v.color }}</span>
                 <span class="unit muted">list</span>
               </div>
             </div>
@@ -125,7 +130,7 @@
               <tr class="clickable" [class.aging-row]="v.isAgingStock" (click)="open(v)">
                 <td>
                   <strong>{{ v.year }} {{ v.make }} {{ v.model }}</strong>
-                  <span class="muted"> {{ v.trim }}</span>
+                  @if (hasTrim(v)) { <span class="muted"> {{ v.trim }}</span> }
                 </td>
                 <td class="muted mono">{{ v.vin }}</td>
                 <td><span class="badge" [ngClass]="statusBadge(v.status)">{{ statusLabel(v.status) }}</span></td>
@@ -133,7 +138,15 @@
                   <span [class.aging-text]="v.isAgingStock">{{ v.daysInInventory }}</span>
                   @if (v.isAgingStock) { <span class="badge badge-aging">AGING</span> }
                 </td>
-                <td class="right nowrap">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</td>
+                <td class="right nowrap">
+                  @if (v.discountPercent) {
+                    <span class="price-was">{{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}</span>
+                    <span class="price-cut">{{ v.netPrice | currency:'USD':'symbol':'1.0-0' }}</span>
+                    <span class="badge badge-cut">−{{ v.discountPercent }}%</span>
+                  } @else {
+                    {{ v.listPrice | currency:'USD':'symbol':'1.0-0' }}
+                  }
+                </td>
                 <td class="right">
                   @if (v.openActionCount > 0) { <span class="badge badge-open">{{ v.openActionCount }} open</span> }
                   @else { <span class="muted">—</span> }

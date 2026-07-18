@@ -167,6 +167,18 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .price { font-size: 14px; font-weight: 700; white-space: nowrap; }
+
+/* Discounted pricing: original struck through, net price emphasised. */
+.price-wrap { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+.price-was {
+  font-size: 10.5px; color: var(--text-dim);
+  text-decoration: line-through; white-space: nowrap;
+}
+.price-cut { color: var(--success); }
+/* Table view keeps the same treatment inline. */
+.list .price-was { margin-right: 5px; }
+.list .price-cut { font-weight: 600; }
+.list .badge-cut { margin-left: 6px; }
 .spec {
   font-size: 11px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

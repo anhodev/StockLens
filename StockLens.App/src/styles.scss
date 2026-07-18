@@ -153,6 +153,7 @@ tbody tr:hover { background: var(--surface-2); }
 .badge-sold { background: #f0f0f2; color: #6b7280; }
 .badge-open { background: #eaf0fe; color: #1d4ed8; }
 .badge-done { background: #eaf7ef; color: #15803d; }
+.badge-cut { background: oklch(95% 0.03 150); color: oklch(48% 0.14 150); }
 
 .muted { color: var(--text-dim); }
 .right { text-align: right; }

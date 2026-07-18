@@ -25,6 +25,10 @@ export interface Vehicle {
   depositAmount?: number | null;
   salespersonName?: string | null;
   listPrice: number;
+  /** Effective discount % from the applied business strategy, if any. */
+  discountPercent?: number | null;
+  /** List price after the effective strategy discount; equals listPrice when none applies. */
+  netPrice: number;
   cost: number;
   status: VehicleStatus;
   acquiredDate: string;

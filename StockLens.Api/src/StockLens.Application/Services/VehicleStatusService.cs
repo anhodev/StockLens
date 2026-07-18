@@ -29,11 +29,14 @@ public record StatusChangeResult(StatusChangeOutcome Outcome, VehicleDto? Vehicl
 public class VehicleStatusService
 {
     private readonly IApplicationDbContext _db;
+    private readonly VehiclePricingService _pricing;
     private readonly ILogger<VehicleStatusService> _logger;
 
-    public VehicleStatusService(IApplicationDbContext db, ILogger<VehicleStatusService> logger)
+    public VehicleStatusService(
+        IApplicationDbContext db, VehiclePricingService pricing, ILogger<VehicleStatusService> logger)
     {
         _db = db;
+        _pricing = pricing;
         _logger = logger;
     }
 
@@ -118,7 +121,8 @@ public class VehicleStatusService
         else
             vehicle.Salesperson = null;
 
-        return new StatusChangeResult(StatusChangeOutcome.Success, vehicle.ToDto(today));
+        var discount = await _pricing.ResolveDiscountAsync(vehicle, today, ct);
+        return new StatusChangeResult(StatusChangeOutcome.Success, vehicle.ToDto(today, discount));
     }
 
     /// <summary>

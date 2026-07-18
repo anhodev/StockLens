@@ -35,6 +35,8 @@
 .aging-text { color: var(--aging); }
 /* Deliberately not .muted: inside .facts that class renders as an uppercase label. */
 .not-sold { color: var(--text-dim); font-weight: 500; }
+.list-struck { text-decoration: line-through; color: var(--text-dim); font-weight: 500; }
+.net-price { color: var(--success); }
 
 section h3 {
   font-size: 10px; margin-bottom: 10px;

@@ -20,7 +20,18 @@
       </div>
       <div><span class="muted">Model</span><strong>{{ vehicle.model }}</strong></div>
       <div><span class="muted">Year</span><strong>{{ vehicle.year }}</strong></div>
-      <div><span class="muted">List price</span><strong>{{ vehicle.listPrice | currency:'USD':'symbol':'1.0-0' }}</strong></div>
+      <div><span class="muted">List price</span>
+        @if (vehicle.discountPercent) {
+          <strong class="list-struck">{{ vehicle.listPrice | currency:'USD':'symbol':'1.0-0' }}</strong>
+        } @else {
+          <strong>{{ vehicle.listPrice | currency:'USD':'symbol':'1.0-0' }}</strong>
+        }
+      </div>
+      @if (vehicle.discountPercent) {
+        <div><span class="muted">Net price · −{{ vehicle.discountPercent }}%</span>
+          <strong class="net-price">{{ vehicle.netPrice | currency:'USD':'symbol':'1.0-0' }}</strong>
+        </div>
+      }
       <div><span class="muted">Cost</span><strong>{{ vehicle.cost | currency:'USD':'symbol':'1.0-0' }}</strong></div>
       <div><span class="muted">Body</span><strong>{{ vehicle.bodyType }}</strong></div>
       <div><span class="muted">Mileage</span><strong>{{ vehicle.mileage | number }} mi</strong></div>

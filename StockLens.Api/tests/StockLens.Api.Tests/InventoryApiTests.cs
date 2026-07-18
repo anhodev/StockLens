@@ -82,6 +82,25 @@ public class InventoryApiTests
     }
 
     [Fact]
+    public async Task List_price_reflects_the_effective_strategy_discount()
+    {
+        var client = _factory.CreateClient();
+
+        var page = await client.GetFromJsonAsync<PagedResult<VehicleDto>>(
+            "/api/vehicles?pageSize=200", Json);
+
+        // Seeded Toyota factory strategy applies a 3% discount to every in-stock Toyota.
+        var toyota = page!.Items.FirstOrDefault(v => v.Make == "Toyota" && v.Status != Domain.Enums.VehicleStatus.Sold);
+        Assert.NotNull(toyota);
+        Assert.Equal(3m, toyota!.DiscountPercent);
+        Assert.Equal(Math.Round(toyota.ListPrice * 0.97m, 2), toyota.NetPrice);
+
+        // A vehicle with no applicable strategy nets to its list price.
+        var undiscounted = page.Items.First(v => v.DiscountPercent is null);
+        Assert.Equal(undiscounted.ListPrice, undiscounted.NetPrice);
+    }
+
+    [Fact]
     public async Task Aging_endpoint_returns_only_aging_vehicles()
     {
         var client = _factory.CreateClient();

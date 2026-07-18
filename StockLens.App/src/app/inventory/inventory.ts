@@ -46,7 +46,7 @@ export class InventoryComponent implements OnInit, OnDestroy {
   sortBy: SortKey = 'age';
   desc = true;
   page = 1;
-  readonly pageSize = 24;
+  readonly pageSize = 50;
 
   /** The term the currently-displayed results were fetched with; guards against duplicate requests. */
   private lastAppliedSearch = '';
@@ -184,6 +184,12 @@ export class InventoryComponent implements OnInit, OnDestroy {
     this.selected.set(updated);
     this.load();
     this.loadAgingCount();
+  }
+
+  /** True when the vehicle has a real trim worth showing (blanks and dash placeholders don't count). */
+  hasTrim(v: Vehicle): boolean {
+    const t = (v.trim ?? '').trim();
+    return t !== '' && t !== '—' && t !== '-' && t !== '--';
   }
 
   statusBadge(status: VehicleStatus): string {
