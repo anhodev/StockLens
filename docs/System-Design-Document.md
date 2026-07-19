@@ -25,54 +25,7 @@ StockLens is a two-tier application: an Angular single-page app talking to a .NE
 with PostgreSQL for storage and SignalR for real-time push. The backend follows Clean
 Architecture, so the dependency direction always points inward toward a framework-free domain.
 
-```mermaid
-flowchart TB
-    subgraph Client["Browser (Angular 20 SPA)"]
-        UI["Dashboard / Inventory / Strategies views<br/>(standalone components, signals, OnPush)"]
-        API_SVC["ApiService<br/>(HttpClient)"]
-        RT_SVC["RealtimeService<br/>(@microsoft/signalr)"]
-        UI --> API_SVC
-        UI --> RT_SVC
-    end
-
-    subgraph Server["StockLens.Api (.NET 10 minimal API)"]
-        MW["Request-logging middleware<br/>(correlation id + Serilog)"]
-        EP["Minimal-API endpoints<br/>(Vehicles, Actions, Strategies, Dashboard, Salespeople)"]
-        VAL["FluentValidation filter"]
-        HUB["InventoryHub (SignalR)"]
-
-        subgraph App["StockLens.Application"]
-            SVC["Services: Dashboard, Pricing, VehicleStatus"]
-            RES["StrategyResolver"]
-            NOTIF["IInventoryNotifier"]
-        end
-
-        subgraph Dom["StockLens.Domain"]
-            ENT["Entities, enums, InventoryPolicy"]
-        end
-
-        subgraph Infra["StockLens.Infrastructure"]
-            EFC["EF Core DbContext<br/>+ configs, migrations, seeder"]
-        end
-    end
-
-    DB[("PostgreSQL 16")]
-
-    API_SVC -- "HTTPS / REST (JSON)" --> MW
-    MW --> EP
-    EP --> VAL
-    EP --> SVC
-    EP --> NOTIF
-    SVC --> RES
-    SVC --> EFC
-    EFC --> DB
-    NOTIF -- "broadcast" --> HUB
-    HUB -- "WebSocket push" --> RT_SVC
-
-    App --> Dom
-    Infra --> App
-    Server --> Dom
-```
+![StockLens architecture: an Angular 20 SPA talking over REST and SignalR to a layered .NET 10 minimal API backed by PostgreSQL](architecture.svg)
 
 Dependency rule: `Api` and `Infrastructure` depend on `Application`, `Application` depends on
 `Domain`, and `Domain` depends on nothing. The API composes the graph at startup through

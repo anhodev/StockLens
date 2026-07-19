@@ -90,6 +90,12 @@ export class InventoryComponent implements OnInit, OnDestroy {
       this.loadAgingCount();
     }));
     this.unsubs.push(this.realtime.onAction(() => this.load()));
+    // A strategy change (add/edit/remove) re-derives every vehicle's discount and
+    // net price on read, so refresh the list and aging count to reflect it live.
+    this.unsubs.push(this.realtime.onStrategy(() => {
+      this.load();
+      this.loadAgingCount();
+    }));
   }
 
   ngOnDestroy(): void {
