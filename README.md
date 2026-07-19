@@ -56,9 +56,33 @@ StockLens.Api/
 
 ## Prerequisites
 
-- .NET 10 SDK
-- Node 20+ and Angular CLI 20 (`npm i -g @angular/cli`)
-- Docker Desktop
+Install these once on a fresh machine. The version-check column is how you confirm each tool is on
+the `PATH` and new enough; open a new terminal after installing so the updated `PATH` is picked up.
+
+| Tool | Minimum version | Install | Verify |
+| --- | --- | --- | --- |
+| .NET SDK | 10.0 | [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download/dotnet/10.0) (or `winget install Microsoft.DotNet.SDK.10` / `brew install --cask dotnet-sdk`) | `dotnet --version` |
+| Node.js + npm | Node 20 LTS or newer | [nodejs.org](https://nodejs.org/) (or `winget install OpenJS.NodeJS.LTS` / `brew install node`) | `node --version` and `npm --version` |
+| Angular CLI | 20 | `npm install -g @angular/cli@20` | `ng version` |
+| Docker Desktop | current | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) | `docker --version` (start Docker Desktop so the engine is running) |
+| Git | current | [git-scm.com](https://git-scm.com/downloads) | `git --version` |
+
+The Angular CLI is optional if you only use the `npm` scripts below, but the VS Code launch config
+and the `ng` commands in this document assume it is installed globally.
+
+## First-time setup on a new machine
+
+Clone the repository and open the **repository root** (`StockLens/`), not a subfolder.
+
+```bash
+git clone <repository-url> StockLens
+cd StockLens
+```
+
+From here, either use the VS Code launch configs (recommended) or run each piece from the CLI.
+Both paths are below. On the very first run the API creates the database schema (EF Core
+migrations) and seeds representative data, so the initial startup takes a little longer than
+later ones.
 
 ## Run it in VS Code (recommended)
 
@@ -83,41 +107,72 @@ database is up before the API applies EF migrations on startup. Other tasks are 
 
 ## Run it from the CLI
 
+Run the three steps in order, each in its own terminal (the API and the web app are long-running).
+All paths below are relative to the repository root.
+
 ### 1. Database
+
+Make sure Docker Desktop is running, then start PostgreSQL:
 
 ```bash
 cd StockLens.Api
-docker compose up -d          # PostgreSQL on host port 5433 (mapped to avoid a local 5432 clash)
+docker compose up -d          # PostgreSQL 16 on host port 5433 (mapped to avoid a local 5432 clash)
+docker compose ps             # confirm the "stocklens-db" container is "healthy"
 ```
+
+The container has a health check, so give it a few seconds to report `healthy` before starting the
+API. Data persists in the `stocklens_pgdata` Docker volume across restarts. To stop it later use
+`docker compose down` (add `-v` to also delete the volume and start from an empty database).
 
 ### 2. API
 
 ```bash
 cd StockLens.Api/src/StockLens.Api
+dotnet restore                # restore NuGet packages (first run only)
 dotnet build                  # compile only
 dotnet run                    # build and run
 ```
 
-Listens on `http://localhost:5080` (Swagger UI at `/swagger`; `/` redirects there). On startup
-the API applies EF migrations and seeds representative data (in-stock, deposited, held, and
-aging vehicles; salespeople; sales history; strategies at every scope).
+Listens on `http://localhost:5080` (Swagger UI at `/swagger`; `/` redirects there). On the first
+startup the API applies EF migrations and seeds representative data (in-stock, deposited, held, and
+aging vehicles; salespeople; sales history; strategies at every scope). Confirm it is up with a
+quick health check:
+
+```bash
+curl http://localhost:5080/health/live     # -> process is up
+curl http://localhost:5080/health/ready     # -> database is reachable
+```
 
 > The connection string lives in `appsettings.json` and `appsettings.Development.json`
 > (`Host=localhost;Port=5433;Database=stocklens;Username=stocklens;Password=stocklens`).
-> Change the port back to `5432` (here and in `docker-compose.yml`) if you have no local
-> Postgres occupying it.
+> It must match the port published by `docker-compose.yml`. Change the port back to `5432` (in both
+> files) if you would rather use a local Postgres and have none occupying `5432`.
 
 ### 3. Web app
 
 ```bash
 cd StockLens.App
-npm install
-npm run build                 # production build to dist/
-npm start                     # dev server at http://localhost:4200
+npm install                   # install dependencies (first run only; this is the slow step)
+npm start                     # dev server at http://localhost:4200, reloads on save
 ```
 
-If the API is not on `http://localhost:5080`, update `API_BASE` in
-`StockLens.App/src/app/core/config.ts`.
+Open `http://localhost:4200`. The dev server proxies nothing on its own; the app calls the API
+directly at the address in `API_BASE`, so the API from step 2 must be running. For a production
+bundle instead, run `npm run build` (output goes to `dist/`).
+
+> If the API is not on `http://localhost:5080`, update `API_BASE` in
+> `StockLens.App/src/app/core/config.ts` and restart the dev server.
+
+## Troubleshooting a fresh setup
+
+| Symptom | Likely cause and fix |
+| --- | --- |
+| `docker compose` cannot connect / "pipe not found" | Docker Desktop is not running. Start it and wait for the whale icon to settle, then retry. |
+| API fails to start with a connection or timeout error | The database container is not `healthy` yet, or the port differs. Check `docker compose ps`, and confirm the connection-string port matches `docker-compose.yml`. |
+| Port `5433` (or `5080`, `4200`) already in use | Something else holds the port. Stop it, or change the port in `docker-compose.yml` + `appsettings*.json` (DB), `launchSettings.json` + `.vscode/launch.json` + `API_BASE` (API), or the `ng serve --port` flag (app). |
+| Dashboard loads but shows no data / network errors in the browser console | The API is not running, is on a different port, or CORS blocks it. Confirm step 2 is up and that `API_BASE` matches the API origin. |
+| `ng: command not found` | The Angular CLI is not installed globally. Run `npm install -g @angular/cli@20`, or use the `npm` scripts (`npm start`, `npm run build`) which do not need it. |
+| `dotnet` build errors about the target framework | The installed SDK is older than 10.0. Check `dotnet --version` and install the .NET 10 SDK. |
 
 ## Tests
 
@@ -127,6 +182,13 @@ pricing, and the vehicle lifecycle workflow.
 ```bash
 cd StockLens.Api
 dotnet test                   # domain unit tests + API integration tests (needs the DB up)
+```
+
+Frontend unit tests run through Karma:
+
+```bash
+cd StockLens.App
+npm test                      # or: ng test
 ```
 
 - **Domain unit tests** (`StockLens.Domain.Tests`): the aging-stock threshold and
