@@ -54,10 +54,139 @@ StockLens.Api/
 10. **Observability**: Serilog structured logging with a per-request correlation id
     (`X-Correlation-Id`) attached to every log line via request-logging middleware.
 
-## Prerequisites
+## Step-by-step setup on a new machine
 
-Install these once on a fresh machine. The version-check column is how you confirm each tool is on
-the `PATH` and new enough; open a new terminal after installing so the updated `PATH` is picked up.
+Follow these steps in order on a machine that has none of the tooling installed. Each step ends with
+a command that confirms it worked before you move on. Commands are shown for Windows (`winget`) and
+macOS (`brew`); on either OS you can also use the installer links instead. After installing a tool,
+open a **new terminal** so the updated `PATH` is picked up.
+
+By the end the app runs at `http://localhost:4200` and the API at `http://localhost:5080`.
+
+### Step 1: Install Node.js
+
+Node runs the Angular web app and its build.
+
+- Windows: `winget install OpenJS.NodeJS.LTS`
+- macOS: `brew install node`
+- Or download the **LTS** installer from [nodejs.org](https://nodejs.org/).
+
+Verify (need Node 20 or newer):
+
+```bash
+node --version
+npm --version
+```
+
+### Step 2: Install Git
+
+Git is used to download (clone) the source code.
+
+- Windows: `winget install Git.Git`
+- macOS: `brew install git` (or run `git` once to trigger Xcode command line tools)
+- Or download from [git-scm.com](https://git-scm.com/downloads).
+
+Verify:
+
+```bash
+git --version
+```
+
+### Step 3: Clone the code
+
+Pick a folder for your projects, then clone the repository into it and move into the repo root.
+
+```bash
+git clone <repository-url> StockLens
+cd StockLens
+```
+
+`<repository-url>` is the HTTPS or SSH URL from your Git host. Everything below is run from this
+`StockLens/` root unless a step says otherwise.
+
+### Step 4: Run the Angular app
+
+Install the web app's dependencies and start its dev server.
+
+```bash
+cd StockLens.App
+npm install                   # first run only; downloads dependencies, takes a few minutes
+npm start                     # starts the dev server
+```
+
+Open `http://localhost:4200`. The app loads and reloads on save. It will show **no data yet**
+because the API is not running; that is expected and is fixed in steps 5 to 7. Leave this terminal
+running and open a new one for the next steps.
+
+### Step 5: Install Docker Desktop
+
+The database (PostgreSQL) runs inside a Docker container, so you do not have to install PostgreSQL
+directly.
+
+- Download and install **Docker Desktop** from
+  [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/).
+- **Start Docker Desktop and wait until it says it is running** (the whale icon stops animating).
+  Nothing in the next step works until the Docker engine is actually up.
+
+Verify:
+
+```bash
+docker --version
+docker info                   # succeeds only when Docker Desktop is running
+```
+
+### Step 6: Create the PostgreSQL database with Docker Compose
+
+From the repo root, start the database container. The first run downloads the PostgreSQL image, so
+give it a moment.
+
+```bash
+cd StockLens.Api
+docker compose up -d          # creates and starts the "stocklens-db" container on port 5433
+docker compose ps             # wait until STATUS shows "healthy"
+```
+
+The database keeps its data in a Docker volume, so it survives restarts. Stop it later with
+`docker compose down` (add `-v` to also erase the data and start fresh).
+
+### Step 7: Run the API
+
+With the database healthy, start the API from its project folder.
+
+```bash
+cd StockLens.Api/src/StockLens.Api
+dotnet run                    # restores, builds, and runs the API
+```
+
+> Requires the **.NET 10 SDK**. If `dotnet --version` reports less than 10 or the command is not
+> found, install it first: Windows `winget install Microsoft.DotNet.SDK.10`, macOS
+> `brew install --cask dotnet-sdk`, or from
+> [dotnet.microsoft.com/download](https://dotnet.microsoft.com/download/dotnet/10.0).
+
+On the first start the API creates the database schema (EF Core migrations) and seeds sample data,
+so it takes a little longer than later runs. It listens on `http://localhost:5080`. Confirm it is
+up:
+
+```bash
+curl http://localhost:5080/health/ready     # database reachable
+```
+
+Swagger UI is at `http://localhost:5080/swagger`.
+
+### Step 8: See it working
+
+Go back to the browser tab at `http://localhost:4200` and refresh. The dashboard now shows live
+inventory data served by the API, with real-time updates over SignalR.
+
+---
+
+The sections below are reference material: a per-tool prerequisites table, the same run steps as VS
+Code launch configs, tests, endpoints, and troubleshooting.
+
+## Prerequisites (reference)
+
+The step-by-step guide above installs each of these in order. This table is the at-a-glance summary:
+the version to have, how to install it, and the command that confirms it is on your `PATH`.
 
 | Tool | Minimum version | Install | Verify |
 | --- | --- | --- | --- |
@@ -67,39 +196,69 @@ the `PATH` and new enough; open a new terminal after installing so the updated `
 | Docker Desktop | current | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) | `docker --version` (start Docker Desktop so the engine is running) |
 | Git | current | [git-scm.com](https://git-scm.com/downloads) | `git --version` |
 
-The Angular CLI is optional if you only use the `npm` scripts below, but the VS Code launch config
-and the `ng` commands in this document assume it is installed globally.
-
-## First-time setup on a new machine
-
-Clone the repository and open the **repository root** (`StockLens/`), not a subfolder.
-
-```bash
-git clone <repository-url> StockLens
-cd StockLens
-```
-
-From here, either use the VS Code launch configs (recommended) or run each piece from the CLI.
-Both paths are below. On the very first run the API creates the database schema (EF Core
-migrations) and seeds representative data, so the initial startup takes a little longer than
-later ones.
+The Angular CLI is optional if you only use the `npm` scripts, but the VS Code launch config and the
+`ng` commands in this document assume it is installed globally.
 
 ## Run it in VS Code (recommended)
 
-Open the **repository root** (`StockLens/`), not a subfolder, so `.vscode/` is picked up.
-Install the recommended extensions when prompted (C# Dev Kit, Angular Language Service, Docker).
+The repository ships its own VS Code workspace under `.vscode/` (`launch.json`, `tasks.json`,
+`extensions.json`), so debug configs and build tasks are already wired up. You only need to do the
+one-time setup below once per machine.
 
-Press **F5** and pick a configuration:
+### First-time VS Code setup
+
+1. **Install VS Code** from [code.visualstudio.com](https://code.visualstudio.com/), plus the
+   [prerequisites](#prerequisites-reference) (.NET 10 SDK, Node, Docker Desktop). Start Docker Desktop.
+2. **Open the repository root** (`StockLens/`), not a subfolder: `File → Open Folder…` and pick the
+   `StockLens/` directory. The `.vscode/` configs are only picked up when the root is the workspace.
+3. **Install the recommended extensions.** VS Code prompts "This workspace has extension
+   recommendations" the first time; click **Install All**. They come from `.vscode/extensions.json`:
+
+   | Extension | Why |
+   | --- | --- |
+   | C# Dev Kit (`ms-dotnettools.csdevkit`) | Build and debug the .NET API |
+   | C# (`ms-dotnettools.csharp`) | C# language support (installed with Dev Kit) |
+   | Angular Language Service (`angular.ng-template`) | Angular template IntelliSense |
+   | Docker (`ms-azuretools.vscode-docker`) | Manage the Postgres container |
+
+   You can also open the Extensions panel (`Ctrl+Shift+X`), type `@recommended`, and install from there.
+4. **Install the web app dependencies once.** The app launch runs `npm start`, which needs
+   `node_modules`, but no task installs them for you. Open a terminal (`Ctrl+` `` ` ``) and run:
+
+   ```bash
+   cd StockLens.App
+   npm install
+   ```
+
+   Skipping this makes the **StockLens.App** launch fail with "ng: command not found" or missing
+   modules. The API side needs no equivalent step: its `build-api` task restores NuGet packages.
+
+### Run and debug
+
+Press **F5** (or open the **Run and Debug** panel, `Ctrl+Shift+D`) and pick a configuration from the
+dropdown:
 
 | Configuration | What it does |
 | --- | --- |
-| **StockLens.API** | Starts the Postgres container, builds the solution, debugs the API on `http://localhost:5080`, and opens Swagger |
-| **StockLens.App (Chrome)** | Runs the Angular dev server and opens `http://localhost:4200` |
-| **StockLens (API + App)** | Compound; runs both together |
+| **StockLens.API** | Starts the Postgres container, builds the solution, debugs the API on `http://localhost:5080`, and opens Swagger. Breakpoints in C# work. |
+| **StockLens.App (Chrome)** | Runs the Angular dev server and launches Chrome at `http://localhost:4200`. Breakpoints in TypeScript work. |
+| **StockLens (API + App)** | Compound; runs both of the above together. Use this for the full stack. Stopping one stops both. |
 
-The API's `preLaunchTask` (`prepare-api`) runs `start-database` then `build-api`, so the
-database is up before the API applies EF migrations on startup. Other tasks are available via
-**Terminal → Run Task**: `start-database`, `stop-database`, `build-api`, `test-api`, `start-app`.
+Behind the scenes the API's `preLaunchTask` (`prepare-api`) runs `start-database` then `build-api`
+in sequence, so the database is up before the API applies EF migrations on startup, and the app's
+`preLaunchTask` (`start-app`) boots the dev server. First launch is slower while the DB image pulls
+and the app compiles.
+
+### Tasks you can run on their own
+
+Open the Command Palette (`Ctrl+Shift+P`) → **Tasks: Run Task**, or **Terminal → Run Task**:
+
+| Task | Does |
+| --- | --- |
+| `start-database` / `stop-database` | Start or stop the Postgres container |
+| `build-api` | Build the .NET solution (also the default build task, `Ctrl+Shift+B`) |
+| `test-api` | Run the backend unit + integration tests |
+| `start-app` | Start the Angular dev server on `http://localhost:4200` |
 
 > The API port is **5080** in both `.vscode/launch.json` and `Properties/launchSettings.json`,
 > matching `API_BASE` in `StockLens.App/src/app/core/config.ts` and the CORS origin. If you
